@@ -1,0 +1,52 @@
+﻿@model WebTruyen.Models.Cart
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<h2>Giỏ hàng của bạn</h2>
+
+@if (!Model.CartItems.Any())
+{
+    <p>Giỏ hàng trống.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sách</th>
+                <th>Đơn giá</th>
+                <th>Số lượng</th>
+                <th>Thành tiền</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.CartItems)
+            {
+                <tr>
+                    <td>@item.Book.Title</td>
+                    <td>@item.Book.Price.ToString("N0") đ</td>
+                    <td style="width:120px;">
+                        <form method="post" asp-action="UpdateQuantity" class="d-flex">
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <input type="number" name="quantity" value="@item.Quantity" min="1"
+                                   class="form-control form-control-sm" onchange="this.form.submit()" />
+                        </form>
+                    </td>
+                    <td>@((item.Quantity * item.Book.Price).ToString("N0")) đ</td>
+                    <td>
+                        <form method="post" asp-action="Remove">
+                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
+                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <h4>Tổng cộng: @Model.CartItems.Sum(i => i.Quantity * i.Book.Price).ToString("N0") đ</h4>
+
+    <a asp-action="Checkout" class="btn btn-primary">Tiến hành đặt hàng</a>
+}

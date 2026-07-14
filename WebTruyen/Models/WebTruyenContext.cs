@@ -17,6 +17,8 @@ namespace WebTruyen.Models
         }
 
         public virtual DbSet<Book> Books { get; set; } = null!;
+        public virtual DbSet<Cart> Carts { get; set; } = null!;
+        public virtual DbSet<CartItem> CartItems { get; set; } = null!;
         public virtual DbSet<Category> Categories { get; set; } = null!;
         public virtual DbSet<Favorite> Favorites { get; set; } = null!;
         public virtual DbSet<Order> Orders { get; set; } = null!;
@@ -28,8 +30,7 @@ namespace WebTruyen.Models
         {
             if (!optionsBuilder.IsConfigured)
             {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=LAPTOP-FUENDMBJ\\SQLEXPRESS;Database=WebTruyen;Trusted_Connection=True;TrustServerCertificate=True");
+                optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
             }
         }
 
@@ -62,6 +63,38 @@ namespace WebTruyen.Models
                     .HasConstraintName("FK__Books__CategoryI__0E6E26BF");
             });
 
+            modelBuilder.Entity<Cart>(entity =>
+            {
+                entity.Property(e => e.CreatedDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.HasOne(d => d.User)
+                    .WithMany(p => p.Carts)
+                    .HasForeignKey(d => d.UserId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_Carts_Users");
+            });
+
+            modelBuilder.Entity<CartItem>(entity =>
+            {
+                entity.HasIndex(e => new { e.CartId, e.BookId }, "UQ_CartItems_Cart_Book")
+                    .IsUnique();
+
+                entity.Property(e => e.Quantity).HasDefaultValueSql("((1))");
+
+                entity.HasOne(d => d.Book)
+                    .WithMany(p => p.CartItems)
+                    .HasForeignKey(d => d.BookId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_CartItems_Books");
+
+                entity.HasOne(d => d.Cart)
+                    .WithMany(p => p.CartItems)
+                    .HasForeignKey(d => d.CartId)
+                    .HasConstraintName("FK_CartItems_Carts");
+            });
+
             modelBuilder.Entity<Category>(entity =>
             {
                 entity.Property(e => e.CategoryName).HasMaxLength(100);
@@ -84,13 +117,31 @@ namespace WebTruyen.Models
 
             modelBuilder.Entity<Order>(entity =>
             {
+                entity.Property(e => e.Note).HasMaxLength(500);
+
                 entity.Property(e => e.OrderDate)
                     .HasColumnType("datetime")
                     .HasDefaultValueSql("(getdate())");
 
+                entity.Property(e => e.PaymentMethod)
+                    .HasMaxLength(30)
+                    .HasDefaultValueSql("(N'COD')");
+
+                entity.Property(e => e.PaymentStatus)
+                    .HasMaxLength(30)
+                    .HasDefaultValueSql("(N'Chưa thanh toán')");
+
+                entity.Property(e => e.ReceiverName).HasMaxLength(100);
+
+                entity.Property(e => e.ReceiverPhone)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.ShippingAddress).HasMaxLength(255);
+
                 entity.Property(e => e.Status)
                     .HasMaxLength(30)
-                    .HasDefaultValueSql("(N'Pending')");
+                    .HasDefaultValueSql("(N'Chờ xác nhận')");
 
                 entity.Property(e => e.TotalAmount).HasColumnType("decimal(18, 2)");
 
@@ -98,24 +149,26 @@ namespace WebTruyen.Models
                     .WithMany(p => p.Orders)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__Orders__UserId__1332DBDC");
+                    .HasConstraintName("FK_Orders_Users");
             });
 
             modelBuilder.Entity<OrderDetail>(entity =>
             {
+                entity.HasIndex(e => new { e.OrderId, e.BookId }, "UQ_OrderDetails_Order_Book")
+                    .IsUnique();
+
                 entity.Property(e => e.UnitPrice).HasColumnType("decimal(18, 2)");
 
                 entity.HasOne(d => d.Book)
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.BookId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderDeta__BookI__17036CC0");
+                    .HasConstraintName("FK_OrderDetails_Books");
 
                 entity.HasOne(d => d.Order)
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.OrderId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK__OrderDeta__Order__160F4887");
+                    .HasConstraintName("FK_OrderDetails_Orders");
             });
 
             modelBuilder.Entity<Review>(entity =>

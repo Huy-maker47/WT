@@ -7,6 +7,7 @@ namespace WebTruyen.Models
     {
         public Book()
         {
+            CartItems = new HashSet<CartItem>();
             Favorites = new HashSet<Favorite>();
             OrderDetails = new HashSet<OrderDetail>();
             Reviews = new HashSet<Review>();
@@ -24,6 +25,7 @@ namespace WebTruyen.Models
         public bool? IsActive { get; set; }
 
         public virtual Category Category { get; set; } = null!;
+        public virtual ICollection<CartItem> CartItems { get; set; }
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }

@@ -1,0 +1,39 @@
+﻿@model WebTruyen.Models.User
+
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<h2>Đăng ký tài khoản</h2>
+
+<form method="post">
+    <div class="mb-3">
+        <label>Tên đăng nhập</label>
+        <input asp-for="Username" class="form-control" required />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label>Mật khẩu</label>
+        <input asp-for="PasswordHash" type="password" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Họ tên</label>
+        <input asp-for="FullName" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Email</label>
+        <input asp-for="Email" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Số điện thoại</label>
+        <input asp-for="Phone" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Địa chỉ</label>
+        <input asp-for="Address" class="form-control" />
+    </div>
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <button type="submit" class="btn btn-primary">Đăng ký</button>
+</form>

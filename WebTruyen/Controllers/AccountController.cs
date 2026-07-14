@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +42,7 @@ namespace WebTruyen.Controllers
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Sai t�i kho?n ho?c m?t kh?u");
+                ModelState.AddModelError("", "Sai tài kho?n ho?c m?t kh?u");
                 return View();
             }
 
@@ -73,13 +73,17 @@ namespace WebTruyen.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(User model)
         {
-            if (_context.Users.Any(u => u.Username == model.Username))
+            if (!ModelState.IsValid)
             {
-                ModelState.AddModelError("", "Username ?� t?n t?i");
                 return View(model);
             }
 
-            // L?u password d?ng plain text (??n gi?n cho ?? �n)
+            if (_context.Users.Any(u => u.Username == model.Username))
+            {
+                ModelState.AddModelError("", "Username đã tồn tại");
+                return View(model);
+            }
+
             model.Role = "Customer";
             model.IsActive = true;
             model.CreatedDate = DateTime.Now;

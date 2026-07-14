@@ -7,6 +7,7 @@ namespace WebTruyen.Models
     {
         public User()
         {
+            Carts = new HashSet<Cart>();
             Favorites = new HashSet<Favorite>();
             Orders = new HashSet<Order>();
             Reviews = new HashSet<Review>();
@@ -24,6 +25,7 @@ namespace WebTruyen.Models
         public DateTime? CreatedDate { get; set; }
         public bool? IsActive { get; set; }
 
+        public virtual ICollection<Cart> Carts { get; set; }
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }

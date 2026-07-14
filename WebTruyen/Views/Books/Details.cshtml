@@ -1,0 +1,28 @@
+﻿@model WebTruyen.Models.Book
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/no-image.png" : Model.ImageUrl)"
+             class="img-fluid" />
+    </div>
+    <div class="col-md-8">
+        <h2>@Model.Title</h2>
+        <p><strong>Tác giả:</strong> @Model.Author</p>
+        <p><strong>Danh mục:</strong> @Model.Category?.CategoryName</p>
+        <p><strong>Giá:</strong> <span class="text-danger fw-bold">@Model.Price.ToString("N0") đ</span></p>
+        <p><strong>Còn lại:</strong> @Model.Stock cuốn</p>
+        <p>@Model.Description</p>
+
+        <form method="post" asp-controller="Cart" asp-action="AddToCart">
+            <input type="hidden" name="bookId" value="@Model.BookId" />
+            <div class="mb-3" style="max-width:150px;">
+                <label>Số lượng</label>
+                <input type="number" name="quantity" value="1" min="1" max="@Model.Stock" class="form-control" />
+            </div>
+            <button type="submit" class="btn btn-success">Thêm vào giỏ hàng</button>
+        </form>
+    </div>
+</div>
