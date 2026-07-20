@@ -1,0 +1,64 @@
+﻿@model WebTruyen.Models.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng #" + Model.OrderId;
+}
+
+<h2>Đơn hàng #@Model.OrderId</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <p><strong>Người nhận:</strong> @Model.ReceiverName</p>
+        <p><strong>SĐT:</strong> @Model.ReceiverPhone</p>
+        <p><strong>Địa chỉ giao hàng:</strong> @Model.ShippingAddress</p>
+        @if (!string.IsNullOrEmpty(Model.Note))
+        {
+            <p><strong>Ghi chú:</strong> @Model.Note</p>
+        }
+    </div>
+    <div class="col-md-6">
+        <p><strong>Ngày đặt:</strong> @Model.OrderDate?.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Phương thức thanh toán:</strong> @Model.PaymentMethod</p>
+        <p><strong>Trạng thái thanh toán:</strong> @Model.PaymentStatus</p>
+        <p>
+            <strong>Trạng thái đơn hàng:</strong>
+            @{
+                var badgeClass = Model.Status switch
+                {
+                    "Chờ xác nhận" => "bg-warning text-dark",
+                    "Đang giao" => "bg-info text-dark",
+                    "Hoàn thành" => "bg-success",
+                    "Đã hủy" => "bg-danger",
+                    _ => "bg-secondary"
+                };
+            }
+            <span class="badge @badgeClass">@Model.Status</span>
+        </p>
+    </div>
+</div>
+
+<h4>Sản phẩm đã đặt</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Sách</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderDetails)
+        {
+            <tr>
+                <td>@item.Book.Title</td>
+                <td>@item.UnitPrice.ToString("N0") đ</td>
+                <td>@item.Quantity</td>
+                <td>@((item.UnitPrice * item.Quantity).ToString("N0")) đ</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="text-end">Tổng cộng: @Model.TotalAmount.ToString("N0") đ</h4>
+
+<a asp-action="Index" class="btn btn-secondary">Quay lại danh sách đơn</a>

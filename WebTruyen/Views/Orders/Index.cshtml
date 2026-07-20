@@ -1,0 +1,53 @@
+﻿@model List<WebTruyen.Models.Order>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<h2>Đơn hàng của tôi</h2>
+
+@if (!Model.Any())
+{
+    <p>Bạn chưa có đơn hàng nào.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Mã ĐH</th>
+                <th>Ngày đặt</th>
+                <th>Tổng tiền</th>
+                <th>Thanh toán</th>
+                <th>Trạng thái</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <td>#@order.OrderId</td>
+                    <td>@order.OrderDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@order.TotalAmount.ToString("N0") đ</td>
+                    <td>@order.PaymentStatus</td>
+                    <td>
+                        @{
+                            var badgeClass = order.Status switch
+                            {
+                                "Chờ xác nhận" => "bg-warning text-dark",
+                                "Đang giao" => "bg-info text-dark",
+                                "Hoàn thành" => "bg-success",
+                                "Đã hủy" => "bg-danger",
+                                _ => "bg-secondary"
+                            };
+                        }
+                        <span class="badge @badgeClass">@order.Status</span>
+                    </td>
+                    <td>
+                        <a asp-action="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-primary">Xem chi tiết</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
