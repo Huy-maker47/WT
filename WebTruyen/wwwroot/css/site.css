@@ -17,7 +17,24 @@ body {
   margin-bottom: 60px;
 }*/
 @import url('https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;0,7..72,700;1,7..72,500&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap');
+.main-content {
+    flex: 1;
+    width: 100%;
+}
+html {
+    min-height: 100%;
+}
 
+body {
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1;
+}
 :root {
     --ink: #211D1A;
     --ink-soft: #4A433C;
@@ -296,6 +313,7 @@ footer.footer {
     width: 100%;
     white-space: normal !important;
     line-height: normal !important;
+
     background: var(--forest);
     color: var(--paper);
     border-top: 3px solid var(--brass) !important;
@@ -345,4 +363,39 @@ footer.footer {
 .form-control:focus, .form-select:focus {
     border-color: var(--brass);
     box-shadow: 0 0 0 .2rem rgba(176, 141, 43, 0.2);
+}
+/* ---------- Home Banner ---------- */
+.home-banner {
+    margin-top: 1.25rem;
+    margin-bottom: 2.5rem;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(33, 29, 26, 0.15);  
+}
+
+    .home-banner .carousel-item {
+        height: 420px;
+    }
+
+        .home-banner .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .home-banner .carousel-control-prev,
+    .home-banner .carousel-control-next {
+        width: 7%;
+    }
+
+    .home-banner .carousel-indicators button {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+@media (max-width: 768px) {
+    .home-banner .carousel-item {
+        height: 220px;
+    }
 }

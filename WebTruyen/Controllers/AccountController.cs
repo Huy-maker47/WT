@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WebTruyen.Models;
 
@@ -60,7 +61,10 @@ namespace WebTruyen.Controllers
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 principal,
                 new AuthenticationProperties { IsPersistent = true });
-
+            if (user.Role == "Admin")
+            {
+                return RedirectToAction("Index", "AdminBooks");
+            }
             return RedirectToAction("Index", "Home");
         }
 
@@ -99,6 +103,73 @@ namespace WebTruyen.Controllers
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
+[Authorize]
+[HttpGet]
+public async Task<IActionResult> Profile()
+{
+    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    if (string.IsNullOrEmpty(userIdClaim))
+    {
+        return RedirectToAction("Login");
+    }
+
+    int userId = int.Parse(userIdClaim);
+
+    var user = await _context.Users.FindAsync(userId);
+
+    if (user == null)
+    {
+        return NotFound();
+    }
+
+    return View(user);
+}
+
+[Authorize]
+[HttpPost]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> Profile(
+    string fullName,
+    string email,
+    string? phone,
+    string? address,
+    string? avatar)
+{
+    var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    if (string.IsNullOrEmpty(userIdClaim))
+    {
+        return RedirectToAction("Login");
+    }
+
+    int userId = int.Parse(userIdClaim);
+
+    var user = await _context.Users.FindAsync(userId);
+
+    if (user == null)
+    {
+        return NotFound();
+    }
+
+    if (_context.Users.Any(u => u.Email == email && u.UserId != userId))
+    {
+        ModelState.AddModelError("", "Email này đã được sử dụng.");
+        return View(user);
+    }
+
+    user.FullName = fullName;
+    user.Email = email;
+    user.Phone = phone;
+    user.Address = address;
+    user.Avatar = avatar;
+
+    await _context.SaveChangesAsync();
+
+    ViewBag.Success = "Cập nhật thông tin thành công.";
+
+    return View(user);
+}
 
         [AllowAnonymous]
         public IActionResult AccessDenied()
