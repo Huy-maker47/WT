@@ -1,69 +1,225 @@
 ﻿@page "{userId:int}"
 @model WebTruyen.Pages.AdminChat.ChatModel
+
 @{
     ViewData["Title"] = "Chat với " + Model.CustomerName;
     Layout = "_AdminLayout";
 }
 
 <h2>Chat với @Model.CustomerName</h2>
-<a asp-page="Index" class="btn btn-sm btn-secondary mb-3">&larr; Quay lại danh sách</a>
 
-<div id="chatBox" class="border rounded p-3 mb-3" style="height:400px; overflow-y:auto; background:var(--cream);">
+<a asp-page="Index"
+   class="btn btn-sm btn-secondary mb-3">
+    &larr; Quay lại danh sách
+</a>
+
+<div id="chatBox"
+     class="border rounded p-3 mb-3"
+     style="height:400px;
+            overflow-y:auto;
+            background:var(--cream);">
+
     @foreach (var msg in Model.Messages)
     {
-        <div class="mb-2 @(msg.SenderId == Model.MyUserId ? "text-end" : "text-start")">
-            <span class="badge @(msg.SenderId == Model.MyUserId ? "bg-success" : "bg-secondary")">
-                @msg.Content
-            </span>
-        </div>
-    }
+        <div class="mb-2 @(msg.SenderId == Model.MyUserId
+                                        ? "text-end"
+                                        : "text-start")">
+
+        <span class="badge @(msg.SenderId == Model.MyUserId
+                                                ? "bg-success"
+                                                : "bg-secondary")">
+            @msg.Content
+        </span>
+    </div>
+        }
 </div>
 
-<form id="chatForm" class="d-flex gap-2">
-    <input type="text" id="messageInput" class="form-control" placeholder="Nhập tin nhắn..." />
-    <button type="submit" class="btn btn-primary">Gửi</button>
+<form id="chatForm"
+      class="d-flex gap-2"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input type="text"
+           id="messageInput"
+           class="form-control"
+           placeholder="Nhập tin nhắn..."
+           autocomplete="off" />
+
+    <button type="submit"
+            id="sendButton"
+            class="btn btn-primary">
+        Gửi
+    </button>
 </form>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
     <script>
-        const myUserId = @Model.MyUserId;
         const customerId = @Model.CustomerId;
 
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chatHub")
-            .build();
+        const sendMessageUrl =
+            '@Url.Page(
+                            "/AdminChat/Chat",
+                            "SendMessage",
+                            new { userId = Model.CustomerId }
+                    )';
 
-        connection.on("ReceiveMessage", function (content) {
-            appendMessage(content, false);
-        });
+    const chatForm =
+        document.getElementById("chatForm");
 
-        connection.start();
+        const messageInput =
+            document.getElementById("messageInput");
 
-        document.getElementById("chatForm").addEventListener("submit", async function (e) {
-            e.preventDefault();
-            const input = document.getElementById("messageInput");
-            const content = input.value.trim();
-            if (!content) return;
+        const sendButton =
+            document.getElementById("sendButton");
 
-            await fetch(window.location.pathname + "?handler=SendMessage", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ receiverId: customerId, content: content })
-            });
+        const chatBox =
+            document.getElementById("chatBox");
 
-            await connection.invoke("SendMessage", customerId, content);
-            appendMessage(content, true);
-            input.value = "";
-        });
+        const connection =
+            new signalR.HubConnectionBuilder()
+                .withUrl("/chatHub")
+                .withAutomaticReconnect()
+                .build();
 
-        function appendMessage(content, isMine) {
-            const box = document.getElementById("chatBox");
-            const div = document.createElement("div");
-            div.className = "mb-2 " + (isMine ? "text-end" : "text-start");
-            div.innerHTML = `<span class="badge ${isMine ? 'bg-success' : 'bg-secondary'}">${content}</span>`;
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
+        connection.on(
+            "ReceiveMessage",
+            function (content) {
+                appendMessage(content, false);
+            }
+        );
+
+        async function startSignalR() {
+            try {
+                await connection.start();
+
+                console.log(
+                    "Admin đã kết nối SignalR"
+                );
+            } catch (error) {
+                console.error(
+                    "Không kết nối được SignalR:",
+                    error
+                );
+
+                setTimeout(startSignalR, 3000);
+            }
         }
+
+        startSignalR();
+
+        chatForm.addEventListener(
+            "submit",
+            async function (event) {
+                event.preventDefault();
+
+                const content =
+                    messageInput.value.trim();
+
+                if (!content) {
+                    return;
+                }
+
+                const token =
+                    chatForm.querySelector(
+                        'input[name="__RequestVerificationToken"]'
+                    ).value;
+
+                sendButton.disabled = true;
+
+                try {
+                    const response = await fetch(
+                        sendMessageUrl,
+                        {
+                            method: "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json",
+
+                                "RequestVerificationToken":
+                                    token
+                            },
+
+                            body: JSON.stringify({
+                                receiverId: customerId,
+                                content: content
+                            })
+                        }
+                    );
+
+                    if (!response.ok) {
+                        const errorText =
+                            await response.text();
+
+                        console.error(
+                            "Gửi thất bại:",
+                            response.status,
+                            errorText
+                        );
+
+                        alert(
+                            "Không gửi được tin nhắn."
+                        );
+
+                        return;
+                    }
+
+                    // Chỉ hiện lên giao diện sau khi
+                    // database đã lưu thành công.
+                    appendMessage(content, true);
+
+                    messageInput.value = "";
+                    messageInput.focus();
+                } catch (error) {
+                    console.error(
+                        "Lỗi gửi tin nhắn:",
+                        error
+                    );
+
+                    alert(
+                        "Có lỗi khi gửi tin nhắn."
+                    );
+                } finally {
+                    sendButton.disabled = false;
+                }
+            }
+        );
+
+        function appendMessage(
+            content,
+            isMine
+        ) {
+            const container =
+                document.createElement("div");
+
+            container.className =
+                "mb-2 " +
+                (isMine
+                    ? "text-end"
+                    : "text-start");
+
+            const message =
+                document.createElement("span");
+
+            message.className =
+                "badge " +
+                (isMine
+                    ? "bg-success"
+                    : "bg-secondary");
+
+            message.textContent = content;
+
+            container.appendChild(message);
+            chatBox.appendChild(container);
+
+            chatBox.scrollTop =
+                chatBox.scrollHeight;
+        }
+
+        chatBox.scrollTop =
+            chatBox.scrollHeight;
     </script>
 }

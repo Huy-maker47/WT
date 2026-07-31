@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -40,23 +40,60 @@ namespace WebTruyen.Pages.Chat
             public int ReceiverId { get; set; }
             public string Content { get; set; } = "";
         }
-[Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryToken]
 
-        public async Task<IActionResult> OnPostSendMessageAsync([FromBody] SendMessageRequest req)
+        public async Task<IActionResult> OnPostSendMessageAsync(
+     [FromBody] SendMessageRequest req)
         {
-            var myUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var userIdValue =
+                User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            _context.Messages.Add(new Message
+            if (!int.TryParse(userIdValue, out var myUserId))
+            {
+                return Unauthorized();
+            }
+
+            if (req.ReceiverId <= 0 ||
+                string.IsNullOrWhiteSpace(req.Content))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Tin nhắn không hợp lệ."
+                });
+            }
+
+            var receiverExists = await _context.Users
+                .AnyAsync(u =>
+                    u.UserId == req.ReceiverId &&
+                    u.Role == "Admin" &&
+                    u.IsActive == true);
+
+            if (!receiverExists)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Không tìm thấy Admin."
+                });
+            }
+
+            var message = new Message
             {
                 SenderId = myUserId,
                 ReceiverId = req.ReceiverId,
-                Content = req.Content,
+                Content = req.Content.Trim(),
                 SentDate = DateTime.Now,
                 IsRead = false
-            });
+            };
 
+            _context.Messages.Add(message);
             await _context.SaveChangesAsync();
-            return new JsonResult(new { success = true });
+
+            return new JsonResult(new
+            {
+                success = true,
+                messageId = message.MessageId
+            });
         }
     }
 }
