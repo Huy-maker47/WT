@@ -22,12 +22,18 @@ namespace WebTruyen.Models
         public virtual DbSet<Category> Categories { get; set; } = null!;
         public virtual DbSet<Favorite> Favorites { get; set; } = null!;
         public virtual DbSet<Message> Messages { get; set; } = null!;
-        public virtual DbSet<Notification> Notifications { get; set; } = null!;
         public virtual DbSet<Order> Orders { get; set; } = null!;
         public virtual DbSet<OrderDetail> OrderDetails { get; set; } = null!;
-        public virtual DbSet<RecentlyViewedBook> RecentlyViewedBooks { get; set; } = null!;
         public virtual DbSet<Review> Reviews { get; set; } = null!;
         public virtual DbSet<User> Users { get; set; } = null!;
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlServer("Name=ConnectionStrings:DefaultConnection");
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -50,10 +56,6 @@ namespace WebTruyen.Models
                 entity.Property(e => e.Stock).HasDefaultValueSql("((0))");
 
                 entity.Property(e => e.Title).HasMaxLength(200);
-
-                entity.Property(e => e.UpdatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
 
                 entity.HasOne(d => d.Category)
                     .WithMany(p => p.Books)
@@ -137,27 +139,6 @@ namespace WebTruyen.Models
                     .HasConstraintName("FK__Messages__Sender__6442E2C9");
             });
 
-            modelBuilder.Entity<Notification>(entity =>
-            {
-                entity.HasIndex(e => new { e.UserId, e.IsRead }, "IX_Notifications_UserId_IsRead");
-
-                entity.Property(e => e.Content).HasMaxLength(500);
-
-                entity.Property(e => e.CreatedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.Property(e => e.Link).HasMaxLength(255);
-
-                entity.Property(e => e.Title).HasMaxLength(150);
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.Notifications)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_Notifications_Users");
-            });
-
             modelBuilder.Entity<Order>(entity =>
             {
                 entity.Property(e => e.Note).HasMaxLength(500);
@@ -212,31 +193,6 @@ namespace WebTruyen.Models
                     .WithMany(p => p.OrderDetails)
                     .HasForeignKey(d => d.OrderId)
                     .HasConstraintName("FK_OrderDetails_Orders");
-            });
-
-            modelBuilder.Entity<RecentlyViewedBook>(entity =>
-            {
-                entity.HasKey(e => e.RecentlyViewedId)
-                    .HasName("PK__Recently__EDEACF37171E5263");
-
-                entity.HasIndex(e => new { e.UserId, e.BookId }, "UQ_RecentlyViewedBooks_User_Book")
-                    .IsUnique();
-
-                entity.Property(e => e.ViewedDate)
-                    .HasColumnType("datetime")
-                    .HasDefaultValueSql("(getdate())");
-
-                entity.HasOne(d => d.Book)
-                    .WithMany(p => p.RecentlyViewedBooks)
-                    .HasForeignKey(d => d.BookId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_RecentlyViewedBooks_Books");
-
-                entity.HasOne(d => d.User)
-                    .WithMany(p => p.RecentlyViewedBooks)
-                    .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("FK_RecentlyViewedBooks_Users");
             });
 
             modelBuilder.Entity<Review>(entity =>

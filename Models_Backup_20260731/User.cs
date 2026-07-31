@@ -11,9 +11,7 @@ namespace WebTruyen.Models
             Favorites = new HashSet<Favorite>();
             MessageReceivers = new HashSet<Message>();
             MessageSenders = new HashSet<Message>();
-            Notifications = new HashSet<Notification>();
             Orders = new HashSet<Order>();
-            RecentlyViewedBooks = new HashSet<RecentlyViewedBook>();
             Reviews = new HashSet<Review>();
         }
 
@@ -33,9 +31,7 @@ namespace WebTruyen.Models
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<Message> MessageReceivers { get; set; }
         public virtual ICollection<Message> MessageSenders { get; set; }
-        public virtual ICollection<Notification> Notifications { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
-        public virtual ICollection<RecentlyViewedBook> RecentlyViewedBooks { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
     }
 }

@@ -133,9 +133,20 @@ namespace WebTruyen.Pages.AdminChat
                 Content = content,
                 SentDate = DateTime.Now,
                 IsRead = false
-            };
-
+            }; 
             _context.Messages.Add(message);
+
+            _context.Notifications.Add(new Notification
+            {
+                UserId = request.ReceiverId,
+                Title = "Admin vừa trả lời tin nhắn",
+                Content = content,
+                Link = "/Chat",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
+
             await _context.SaveChangesAsync();
 
             // Server chủ động gửi realtime cho người dùng.

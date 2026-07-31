@@ -31,6 +31,7 @@ namespace WebTruyen.Pages.AdminBooks
 
         public async Task<IActionResult> OnPostAsync()
         {
+            ModelState.Remove("BookInput.UpdatedDate");
             ModelState.Remove("BookInput.CreatedDate");
             ModelState.Remove("BookInput.IsActive");
             ModelState.Remove("BookInput.Category");
@@ -62,7 +63,8 @@ namespace WebTruyen.Pages.AdminBooks
             }
 
             BookInput.CreatedDate = DateTime.Now;
-            BookInput.IsActive = true;
+BookInput.UpdatedDate = DateTime.Now;
+BookInput.IsActive = true;
 
             try
             {

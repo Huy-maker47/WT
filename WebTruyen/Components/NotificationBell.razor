@@ -1,0 +1,56 @@
+﻿<div class="position-relative">
+    <button type="button"
+            class="btn btn-outline-dark btn-sm"
+            @onclick="ToggleNotifications">
+
+        🔔
+
+        @if (UnreadCount > 0)
+        {
+            <span class="badge bg-danger rounded-pill">
+                @UnreadCount
+            </span>
+        }
+    </button>
+
+    @if (isOpen)
+    {
+        <div class="card position-absolute end-0 mt-2 shadow"
+             style="width: 260px; z-index: 9999;">
+
+            <div class="card-body">
+                @if (UnreadCount > 0)
+                {
+                    <p class="mb-2">
+                        Bạn có
+                        <strong>@UnreadCount</strong>
+                        thông báo chưa đọc.
+                    </p>
+                }
+                else
+                {
+                    <p class="mb-2">
+                        Bạn không có thông báo mới.
+                    </p>
+                }
+
+                <a href="/Notifications"
+                   class="btn btn-primary btn-sm w-100">
+                    Xem thông báo
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int UnreadCount { get; set; }
+
+    private bool isOpen = false;
+
+    private void ToggleNotifications()
+    {
+        isOpen = !isOpen;
+    }
+}

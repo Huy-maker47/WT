@@ -35,6 +35,11 @@ namespace WebTruyen.Pages.Books
         public async Task OnGetAsync(int id)
         {
             await LoadDataAsync(id);
+
+            if (Book != null)
+            {
+                await SaveRecentlyViewedAsync(id);
+            }
         }
 
         private async Task LoadDataAsync(int id)
@@ -126,5 +131,39 @@ namespace WebTruyen.Pages.Books
             return RedirectToPage(new { id });
         }
         public List<Book> RelatedBooks { get; set; } = new();
+        private async Task SaveRecentlyViewedAsync(int bookId)
+        {
+            var userId = GetUserId();
+
+            // Chưa đăng nhập thì không lưu lịch sử.
+            if (userId == null)
+            {
+                return;
+            }
+
+            var viewedBook = await _context.RecentlyViewedBooks
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == userId.Value &&
+                    x.BookId == bookId);
+
+            if (viewedBook == null)
+            {
+                viewedBook = new RecentlyViewedBook
+                {
+                    UserId = userId.Value,
+                    BookId = bookId,
+                    ViewedDate = DateTime.Now
+                };
+
+                _context.RecentlyViewedBooks.Add(viewedBook);
+            }
+            else
+            {
+                // Nếu đã xem rồi thì chỉ cập nhật thời gian xem gần nhất.
+                viewedBook.ViewedDate = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

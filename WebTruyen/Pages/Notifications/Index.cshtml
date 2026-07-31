@@ -1,0 +1,105 @@
+﻿@page
+@model WebTruyen.Pages.Notifications.IndexModel
+
+@{
+    ViewData["Title"] = "Thông báo";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2>Thông báo</h2>
+
+        <p class="text-muted mb-0">
+            Có @Model.UnreadCount thông báo chưa đọc.
+        </p>
+    </div>
+
+    @if (Model.UnreadCount > 0)
+    {
+        <form method="post"
+              asp-page-handler="MarkAllRead">
+
+            <button type="submit"
+                    class="btn btn-outline-primary">
+                Đánh dấu tất cả đã đọc
+            </button>
+        </form>
+    }
+</div>
+
+@if (!Model.NotificationList.Any())
+{
+    <div class="alert alert-info">
+        Bạn chưa có thông báo nào.
+    </div>
+}
+else
+{
+    @foreach (var item in Model.NotificationList)
+    {
+        <div class="card mb-3 @(item.IsRead
+                                             ? "border-light"
+                                             : "border-primary shadow-sm")">
+
+    <div class="card-body">
+
+                <div class="d-flex justify-content-between">
+                    <h5 class="card-title">
+                @if (!item.IsRead)
+                        {
+                            <span class="badge bg-danger me-2">
+                                Mới
+                            </span>
+                        }
+
+                        @item.Title
+                    </h5>
+
+                    <small class="text-muted">
+                        @item.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                    </small>
+                </div>
+
+                <p class="card-text">
+                    @item.Content
+                </p>
+
+                <div class="d-flex gap-2">
+
+                    @if (!string.IsNullOrWhiteSpace(item.Link))
+                    {
+                        <form method="post"
+                              asp-page-handler="Open">
+
+                            <input type="hidden"
+                                   name="id"
+                                   value="@item.NotificationId" />
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-sm">
+                                Mở
+                            </button>
+                        </form>
+                    }
+
+                    @if (!item.IsRead)
+                    {
+                        <form method="post"
+                              asp-page-handler="MarkRead">
+
+                            <input type="hidden"
+                                   name="id"
+                                   value="@item.NotificationId" />
+
+                            <button type="submit"
+                                    class="btn btn-outline-secondary btn-sm">
+                                Đánh dấu đã đọc
+                            </button>
+                        </form>
+                    }
+
+                </div>
+            </div>
+        </div>
+    }
+}

@@ -36,6 +36,7 @@ namespace WebTruyen.Pages.AdminBooks
 
         public async Task<IActionResult> OnPostAsync(int id)
         {
+            ModelState.Remove("BookInput.UpdatedDate");
             ModelState.Remove("BookInput.CreatedDate");
             ModelState.Remove("BookInput.IsActive");
             ModelState.Remove("BookInput.Category");
@@ -56,6 +57,7 @@ namespace WebTruyen.Pages.AdminBooks
             book.Price = BookInput.Price;
             book.Stock = BookInput.Stock;
             book.CategoryId = BookInput.CategoryId;
+            book.UpdatedDate = DateTime.Now;
 
             if (ImageFile != null && ImageFile.Length > 0)
             {

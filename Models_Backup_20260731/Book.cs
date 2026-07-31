@@ -10,7 +10,6 @@ namespace WebTruyen.Models
             CartItems = new HashSet<CartItem>();
             Favorites = new HashSet<Favorite>();
             OrderDetails = new HashSet<OrderDetail>();
-            RecentlyViewedBooks = new HashSet<RecentlyViewedBook>();
             Reviews = new HashSet<Review>();
         }
 
@@ -24,13 +23,11 @@ namespace WebTruyen.Models
         public string? ImageUrl { get; set; }
         public DateTime? CreatedDate { get; set; }
         public bool? IsActive { get; set; }
-        public DateTime? UpdatedDate { get; set; }
 
         public virtual Category Category { get; set; } = null!;
         public virtual ICollection<CartItem> CartItems { get; set; }
         public virtual ICollection<Favorite> Favorites { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
-        public virtual ICollection<RecentlyViewedBook> RecentlyViewedBooks { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
     }
 }

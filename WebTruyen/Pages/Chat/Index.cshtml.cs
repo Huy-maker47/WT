@@ -87,6 +87,18 @@ namespace WebTruyen.Pages.Chat
             };
 
             _context.Messages.Add(message);
+
+            // Tạo thông báo cho Admin nhận tin
+            _context.Notifications.Add(new Notification
+            {
+                UserId = req.ReceiverId,
+                Title = "Có tin nhắn mới từ khách hàng",
+                Content = req.Content.Trim(),
+                Link = $"/AdminChat/Chat/{myUserId}",
+                CreatedDate = DateTime.Now,
+                IsRead = false
+            });
+
             await _context.SaveChangesAsync();
 
             return new JsonResult(new
