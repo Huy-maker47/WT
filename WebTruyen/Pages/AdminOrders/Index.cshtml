@@ -1,0 +1,48 @@
+﻿@page
+@model WebTruyen.Pages.AdminOrders.IndexModel
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "_AdminLayout";
+}
+
+<h2>Quản lý đơn hàng</h2>
+
+<form method="get" class="mb-3" style="max-width:300px;">
+    <select name="status" class="form-select" onchange="this.form.submit()">
+        <option value="">-- Tất cả trạng thái --</option>
+        <option value="Chờ xác nhận" selected="@(Model.Status == "Chờ xác nhận")">Chờ xác nhận</option>
+        <option value="Đang giao" selected="@(Model.Status == "Đang giao")">Đang giao</option>
+        <option value="Hoàn thành" selected="@(Model.Status == "Hoàn thành")">Hoàn thành</option>
+        <option value="Đã hủy" selected="@(Model.Status == "Đã hủy")">Đã hủy</option>
+    </select>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Mã ĐH</th>
+            <th>Khách hàng</th>
+            <th>Ngày đặt</th>
+            <th>Tổng tiền</th>
+            <th>Thanh toán</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var order in Model.OrderList)
+        {
+            <tr>
+                <td>#@order.OrderId</td>
+                <td>@order.ReceiverName</td>
+                <td>@order.OrderDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                <td>@order.TotalAmount.ToString("N0") đ</td>
+                <td>@order.PaymentStatus</td>
+                <td><span class="badge bg-info text-dark">@order.Status</span></td>
+                <td>
+                    <a asp-page="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-primary">Chi tiết</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

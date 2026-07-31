@@ -21,6 +21,7 @@ namespace WebTruyen.Models
         public virtual DbSet<CartItem> CartItems { get; set; } = null!;
         public virtual DbSet<Category> Categories { get; set; } = null!;
         public virtual DbSet<Favorite> Favorites { get; set; } = null!;
+        public virtual DbSet<Message> Messages { get; set; } = null!;
         public virtual DbSet<Order> Orders { get; set; } = null!;
         public virtual DbSet<OrderDetail> OrderDetails { get; set; } = null!;
         public virtual DbSet<Review> Reviews { get; set; } = null!;
@@ -113,6 +114,29 @@ namespace WebTruyen.Models
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK__Favorites__UserI__1F98B2C1");
+            });
+
+            modelBuilder.Entity<Message>(entity =>
+            {
+                entity.Property(e => e.Content).HasMaxLength(1000);
+
+                entity.Property(e => e.IsRead).HasDefaultValueSql("((0))");
+
+                entity.Property(e => e.SentDate)
+                    .HasColumnType("datetime")
+                    .HasDefaultValueSql("(getdate())");
+
+                entity.HasOne(d => d.Receiver)
+                    .WithMany(p => p.MessageReceivers)
+                    .HasForeignKey(d => d.ReceiverId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Messages__Receiv__65370702");
+
+                entity.HasOne(d => d.Sender)
+                    .WithMany(p => p.MessageSenders)
+                    .HasForeignKey(d => d.SenderId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK__Messages__Sender__6442E2C9");
             });
 
             modelBuilder.Entity<Order>(entity =>

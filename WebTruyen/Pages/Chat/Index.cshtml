@@ -1,0 +1,71 @@
+﻿@page
+@model WebTruyen.Pages.Chat.IndexModel
+@{
+    ViewData["Title"] = "Hỗ trợ trực tuyến";
+}
+
+<h2>Chat với Admin</h2>
+
+<div id="chatBox" class="border rounded p-3 mb-3" style="height:400px; overflow-y:auto; background:var(--cream);">
+    @foreach (var msg in Model.Messages)
+    {
+        <div class="mb-2 @(msg.SenderId == Model.MyUserId ? "text-end" : "text-start")">
+            <span class="badge @(msg.SenderId == Model.MyUserId ? "bg-success" : "bg-secondary")">
+                @msg.Content
+            </span>
+        </div>
+    }
+</div>
+
+
+<form id="chatForm" class="d-flex gap-2">
+    <input type="text" id="messageInput" class="form-control" placeholder="Nhập tin nhắn..." />
+    <button type="submit" class="btn btn-primary">Gửi</button>
+</form>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        const myUserId = @Model.MyUserId;
+        const adminId = @Model.AdminId; // gửi tới Admin đầu tiên tìm thấy
+
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chatHub")
+            .build();
+
+        connection.on("ReceiveMessage", function (content) {
+            appendMessage(content, false);
+        });
+
+        connection.start();
+
+        document.getElementById("chatForm").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const input = document.getElementById("messageInput");
+            const content = input.value.trim();
+            if (!content) return;
+
+            await fetch("/Chat/Index?handler=SendMessage", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ""
+                },
+                body: JSON.stringify({ receiverId: adminId, content: content })
+            });
+
+            await connection.invoke("SendMessage", adminId, content);
+            appendMessage(content, true);
+            input.value = "";
+        });
+
+        function appendMessage(content, isMine) {
+            const box = document.getElementById("chatBox");
+            const div = document.createElement("div");
+            div.className = "mb-2 " + (isMine ? "text-end" : "text-start");
+            div.innerHTML = `<span class="badge ${isMine ? 'bg-success' : 'bg-secondary'}">${content}</span>`;
+            box.appendChild(div);
+            box.scrollTop = box.scrollHeight;
+        }
+    </script>
+}

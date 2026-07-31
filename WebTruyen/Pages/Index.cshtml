@@ -1,0 +1,45 @@
+﻿@page
+@model WebTruyen.Pages.IndexModel
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="hero">
+    <h1>Mỗi trang sách,<br />một cuộc phiêu lưu.</h1>
+    <p>Kho truyện đa dạng thể loại — từ tiểu thuyết kinh điển đến ngôn tình, trinh thám. Đặt hàng dễ dàng, giao tận nơi.</p>
+    <a asp-page="/Books/Index" class="btn btn-success">Khám phá ngay</a>
+
+    <div class="hero-stack">
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+        <div class="stack-card"></div>
+    </div>
+</div>
+
+<div class="section-heading">
+    <h2>Sách mới về</h2>
+    <a asp-page="/Books/Index" class="text-decoration-none">Xem tất cả &rarr;</a>
+</div>
+
+<div class="row">
+    @foreach (var book in Model.FeaturedBooks)
+    {
+        <div class="col-6 col-md-4 col-lg-3 mb-4">
+            <div class="book-card">
+                <a asp-page="/Books/Details" asp-route-id="@book.BookId">
+                    <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "/images/no-image.png" : book.ImageUrl)" alt="@book.Title" />
+                </a>
+                <div class="card-body">
+                    <div class="card-title">@book.Title</div>
+                    <div class="card-author">@book.Author</div>
+                    <div class="card-price">@book.Price.ToString("N0") đ</div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.FeaturedBooks.Any())
+{
+    <p>Chưa có sách nào để hiển thị.</p>
+}

@@ -1,0 +1,40 @@
+﻿@page
+@model WebTruyen.Pages.AdminCategories.IndexModel
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    Layout = "_AdminLayout";
+}
+
+<h2>Quản lý danh mục</h2>
+<a asp-page="Create" class="btn btn-primary mb-3">+ Thêm danh mục</a>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Tên danh mục</th>
+            <th>Số sách</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cate in Model.Categories)
+        {
+            <tr>
+                <td>@cate.CategoryName</td>
+                <td>@cate.Books.Count</td>
+                <td>
+                    <a asp-page="Edit" asp-route-id="@cate.CategoryId" class="btn btn-sm btn-warning">Sửa</a>
+                    <form method="post" asp-page-handler="Delete" asp-route-id="@cate.CategoryId" class="d-inline"
+                          onsubmit="return confirm('Xác nhận xóa?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

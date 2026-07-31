@@ -1,0 +1,53 @@
+﻿@page "{id:int}"
+@model WebTruyen.Pages.AdminBooks.EditModel
+@{
+    ViewData["Title"] = "Sửa sách";
+    Layout = "_AdminLayout";
+}
+
+<h2>Sửa sách</h2>
+
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="BookInput.BookId" />
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3">
+        <label>Tên sách</label>
+        <input asp-for="BookInput.Title" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Tác giả</label>
+        <input asp-for="BookInput.Author" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Danh mục</label>
+        <select asp-for="BookInput.CategoryId" class="form-select">
+            @foreach (var cate in Model.Categories)
+            {
+                <option value="@cate.CategoryId">@cate.CategoryName</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label>Mô tả</label>
+        <textarea asp-for="BookInput.Description" class="form-control"></textarea>
+    </div>
+    <div class="mb-3">
+        <label>Giá</label>
+        <input asp-for="BookInput.Price" type="number" step="1000" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Tồn kho</label>
+        <input asp-for="BookInput.Stock" type="number" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Ảnh hiện tại</label><br />
+        @if (!string.IsNullOrEmpty(Model.BookInput.ImageUrl))
+        {
+            <img src="@Model.BookInput.ImageUrl" style="max-width:150px;" class="mb-2" />
+        }
+        <br />
+        <label>Chọn ảnh mới (bỏ trống nếu giữ ảnh cũ)</label>
+        <input type="file" name="ImageFile" class="form-control" accept="image/*" />
+    </div>
+    <button type="submit" class="btn btn-success">Lưu</button>
+</form>

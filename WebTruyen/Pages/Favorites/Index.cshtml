@@ -1,0 +1,33 @@
+﻿@page
+@model WebTruyen.Pages.Favorites.IndexModel
+@{
+    ViewData["Title"] = "Sách yêu thích";
+}
+
+<h2>Sách yêu thích của tôi</h2>
+
+@if (!Model.FavoriteBooks.Any())
+{
+    <p>Bạn chưa thích sách nào.</p>
+}
+else
+{
+    <div class="row">
+        @foreach (var book in Model.FavoriteBooks)
+        {
+            <div class="col-6 col-md-4 col-lg-3 mb-4">
+                <div class="book-card">
+                    <a asp-page="/Books/Details" asp-route-id="@book.BookId">
+                        <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "/images/no-image.png" : book.ImageUrl)" alt="@book.Title" />
+                    </a>
+                    <div class="card-body">
+                        <div class="card-title">@book.Title</div>
+                        <div class="card-author">@book.Author</div>
+                        <div class="card-price">@book.Price.ToString("N0") đ</div>
+                        <a asp-page="/Books/Details" asp-route-id="@book.BookId" class="btn btn-outline-primary btn-sm mt-2 w-100">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

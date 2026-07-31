@@ -1,0 +1,59 @@
+﻿@page
+@model WebTruyen.Pages.AdminUsers.IndexModel
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+    Layout = "_AdminLayout";
+}
+
+<h2>Quản lý người dùng</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Trạng thái</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var u in Model.Users)
+        {
+            <tr>
+                <td>@u.Username</td>
+                <td>@u.FullName</td>
+                <td>@u.Email</td>
+                <td>
+                    <form method="post" asp-page-handler="ChangeRole" class="d-flex gap-1">
+                        <input type="hidden" name="userId" value="@u.UserId" />
+                        <select name="role" class="form-select form-select-sm">
+                            <option value="Customer" selected="@(u.Role == "Customer")">Customer</option>
+                            <option value="Staff" selected="@(u.Role == "Staff")">Staff</option>
+                            <option value="Admin" selected="@(u.Role == "Admin")">Admin</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-secondary">Lưu</button>
+                    </form>
+                </td>
+                <td>
+                    @if (u.IsActive == true)
+                    {
+                        <span class="badge bg-success">Hoạt động</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Đã khóa</span>
+                    }
+                </td>
+                <td>
+                    <form method="post" asp-page-handler="ToggleActive" asp-route-id="@u.UserId">
+                        <button type="submit" class="btn btn-sm btn-warning">
+                            @(u.IsActive == true ? "Khóa" : "Mở khóa")
+                        </button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

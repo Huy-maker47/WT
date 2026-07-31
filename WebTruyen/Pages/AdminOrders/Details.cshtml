@@ -1,0 +1,68 @@
+﻿@page "{id:int}"
+@model WebTruyen.Pages.AdminOrders.DetailsModel
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "_AdminLayout";
+}
+
+<h2>Đơn hàng #@Model.OrderData.OrderId</h2>
+
+<div class="row mb-3">
+    <div class="col-md-6">
+        <p><strong>Người nhận:</strong> @Model.OrderData.ReceiverName</p>
+        <p><strong>SĐT:</strong> @Model.OrderData.ReceiverPhone</p>
+        <p><strong>Địa chỉ:</strong> @Model.OrderData.ShippingAddress</p>
+        <p><strong>Ghi chú:</strong> @Model.OrderData.Note</p>
+    </div>
+    <div class="col-md-6">
+        <p><strong>Ngày đặt:</strong> @Model.OrderData.OrderDate?.ToString("dd/MM/yyyy HH:mm")</p>
+        <p><strong>Phương thức thanh toán:</strong> @Model.OrderData.PaymentMethod</p>
+
+        <form method="post" asp-page-handler="UpdatePaymentStatus" class="d-flex gap-2 mb-2">
+            <input type="hidden" name="orderId" value="@Model.OrderData.OrderId" />
+            <select name="paymentStatus" class="form-select">
+                <option value="Chưa thanh toán" selected="@(Model.OrderData.PaymentStatus == "Chưa thanh toán")">Chưa thanh toán</option>
+                <option value="Đã thanh toán" selected="@(Model.OrderData.PaymentStatus == "Đã thanh toán")">Đã thanh toán</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-secondary">Cập nhật</button>
+        </form>
+
+        <form method="post" asp-page-handler="UpdateStatus" class="d-flex gap-2">
+            <input type="hidden" name="orderId" value="@Model.OrderData.OrderId" />
+            <select name="status" class="form-select">
+                <option value="Chờ xác nhận" selected="@(Model.OrderData.Status == "Chờ xác nhận")">Chờ xác nhận</option>
+                <option value="Đang giao" selected="@(Model.OrderData.Status == "Đang giao")">Đang giao</option>
+                <option value="Hoàn thành" selected="@(Model.OrderData.Status == "Hoàn thành")">Hoàn thành</option>
+                <option value="Đã hủy" selected="@(Model.OrderData.Status == "Đã hủy")">Đã hủy</option>
+            </select>
+            <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
+        </form>
+    </div>
+</div>
+
+<h4>Chi tiết sản phẩm</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Sách</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderData.OrderDetails)
+        {
+            <tr>
+                <td>@item.Book.Title</td>
+                <td>@item.UnitPrice.ToString("N0") đ</td>
+                <td>@item.Quantity</td>
+                <td>@((item.UnitPrice * item.Quantity).ToString("N0")) đ</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h4 class="text-end">Tổng cộng: @Model.OrderData.TotalAmount.ToString("N0") đ</h4>
+
+<a asp-page="Index" class="btn btn-secondary">Quay lại danh sách</a>

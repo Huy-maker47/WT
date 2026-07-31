@@ -1,0 +1,46 @@
+﻿@page
+@model WebTruyen.Pages.AdminChat.IndexModel
+@{
+    ViewData["Title"] = "Hỗ trợ khách hàng";
+    Layout = "_AdminLayout";
+}
+
+<h2>Danh sách khách hàng nhắn tin</h2>
+
+@if (!Model.Customers.Any())
+{
+    <p>Chưa có khách hàng nào nhắn tin.</p>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Khách hàng</th>
+                <th>Tin nhắn gần nhất</th>
+                <th>Thời gian</th>
+                <th>Chưa đọc</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model.Customers)
+            {
+                <tr>
+                    <td>@c.FullName (@c.Username)</td>
+                    <td>@c.LastMessage</td>
+                    <td>@c.LastMessageDate?.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @if (c.UnreadCount > 0)
+                        {
+                            <span class="badge bg-danger">@c.UnreadCount</span>
+                        }
+                    </td>
+                    <td>
+                        <a asp-page="Chat" asp-route-userId="@c.UserId" class="btn btn-sm btn-primary">Trả lời</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

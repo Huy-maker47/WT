@@ -1,0 +1,59 @@
+﻿@page
+@model WebTruyen.Pages.Books.IndexModel
+@{
+    ViewData["Title"] = "Danh sách sách";
+}
+
+<h2>Danh sách sách</h2>
+
+@if (!string.IsNullOrEmpty(Model.AuthorName))
+{
+    <p>
+        Đang xem sách của tác giả: <strong>@Model.AuthorName</strong>
+        <a asp-page="Index" class="ms-2">(Xóa lọc)</a>
+    </p>
+}
+
+<form method="get" class="row mb-3">
+    <div class="col-md-4">
+        <select name="categoryId" class="form-select chip-select" onchange="this.form.submit()">
+            <option value="">-- Tất cả danh mục --</option>
+            @foreach (var cate in Model.Categories)
+            {
+                <option value="@cate.CategoryId" selected="@(Model.CategoryId == cate.CategoryId)">
+                    @cate.CategoryName
+                </option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <input type="text" name="keyword" value="@Model.Keyword" class="form-control" placeholder="Tìm theo tên/tác giả..." />
+    </div>
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary">Tìm</button>
+    </div>
+</form>
+
+<div class="row">
+    @foreach (var book in Model.Books)
+    {
+        <div class="col-6 col-md-4 col-lg-3 mb-4">
+            <div class="book-card">
+                <a asp-page="Details" asp-route-id="@book.BookId">
+                    <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "/images/no-image.png" : book.ImageUrl)" alt="@book.Title" />
+                </a>
+                <div class="card-body">
+                    <div class="card-title">@book.Title</div>
+                    <a asp-page="Index" asp-route-authorName="@book.Author" class="card-author d-block text-decoration-none">@book.Author</a>
+                    <div class="card-price">@book.Price.ToString("N0") đ</div>
+                    <a asp-page="Details" asp-route-id="@book.BookId" class="btn btn-outline-primary btn-sm mt-2 w-100">Xem chi tiết</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.Books.Any())
+{
+    <p>Không tìm thấy sách nào.</p>
+}

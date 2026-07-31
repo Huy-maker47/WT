@@ -1,0 +1,117 @@
+﻿@page "{id:int}"
+@model WebTruyen.Pages.Books.DetailsModel
+@{
+    ViewData["Title"] = Model.Book?.Title ?? "Chi tiết sách";
+}
+
+@if (Model.Book == null)
+{
+    <p>Không tìm thấy sách.</p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <img src="@(string.IsNullOrEmpty(Model.Book.ImageUrl) ? "/images/no-image.png" : Model.Book.ImageUrl)"
+                 class="img-fluid" />
+        </div>
+        <div class="col-md-8">
+            <h2>@Model.Book.Title</h2>
+            <p><strong>Tác giả:</strong> <a asp-page="/Books/Index" asp-route-authorName="@Model.Book.Author">@Model.Book.Author</a></p>
+            <p><strong>Danh mục:</strong> @Model.Book.Category?.CategoryName</p>
+            <p><strong>Giá:</strong> <span class="card-price">@Model.Book.Price.ToString("N0") đ</span></p>
+            <p><strong>Còn lại:</strong> @Model.Book.Stock cuốn</p>
+            <p>@Model.Book.Description</p>
+
+            <form method="post" asp-page-handler="AddToCart">
+                <input type="hidden" name="bookId" value="@Model.Book.BookId" />
+                <div class="mb-3" style="max-width:150px;">
+                    <label>Số lượng</label>
+                    <input type="number" name="quantity" value="1" min="1" max="@Model.Book.Stock" class="form-control" />
+                </div>
+                <button type="submit" class="btn btn-success">Thêm vào giỏ hàng</button>
+            </form>
+
+            <form method="post" asp-page-handler="ToggleFavorite" class="mt-2">
+                <input type="hidden" name="id" value="@Model.Book.BookId" />
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    @(Model.IsFavorite ? "♥ Bỏ yêu thích" : "♡ Thêm vào yêu thích")
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    @if (Model.RelatedBooks.Any())
+    {
+        <h4 class="mt-4">Sách cùng danh mục</h4>
+        <div class="row">
+            @foreach (var rb in Model.RelatedBooks)
+            {
+                <div class="col-6 col-md-3 mb-3">
+                    <div class="book-card">
+                        <a asp-page="Details" asp-route-id="@rb.BookId">
+                            <img src="@(string.IsNullOrEmpty(rb.ImageUrl) ? "/images/no-image.png" : rb.ImageUrl)" alt="@rb.Title" />
+                        </a>
+                        <div class="card-body">
+                            <div class="card-title">@rb.Title</div>
+                            <div class="card-price">@rb.Price.ToString("N0") đ</div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    <h4>
+        Đánh giá (@Model.Reviews.Count)
+        @if (Model.Reviews.Any())
+        {
+            <span class="text-warning">— @Model.AverageRating.ToString("0.0") ★</span>
+        }
+    </h4>
+
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <form method="post" asp-page-handler="AddReview" class="mb-4" style="max-width:500px;">
+            <input type="hidden" name="id" value="@Model.Book.BookId" />
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="mb-2">
+                <label>Chấm điểm</label>
+                <select asp-for="RatingInput" class="form-select" style="max-width:150px;">
+                    <option value="5">5 sao</option>
+                    <option value="4">4 sao</option>
+                    <option value="3">3 sao</option>
+                    <option value="2">2 sao</option>
+                    <option value="1">1 sao</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label>Nhận xét</label>
+                <textarea asp-for="CommentInput" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Gửi đánh giá</button>
+        </form>
+    }
+    else
+    {
+        <p><a asp-page="/Account/Login">Đăng nhập</a> để viết đánh giá.</p>
+    }
+
+    @if (!Model.Reviews.Any())
+    {
+        <p class="text-muted">Chưa có đánh giá nào.</p>
+    }
+    else
+    {
+        @foreach (var review in Model.Reviews)
+        {
+            <div class="border-bottom pb-2 mb-2">
+                <strong>@review.User.FullName</strong>
+                <span class="text-warning">@(new string('★', review.Rating ?? 0))@(new string('☆', 5 - (review.Rating ?? 0)))</span>
+                <br />
+                <small class="text-muted">@review.ReviewDate?.ToString("dd/MM/yyyy")</small>
+                <p class="mb-0">@review.Comment</p>
+            </div>
+        }
+    }
+}

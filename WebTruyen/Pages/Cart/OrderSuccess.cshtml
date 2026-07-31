@@ -1,0 +1,11 @@
+﻿@page "{id:int}"
+@model WebTruyen.Pages.Cart.OrderSuccessModel
+@{
+    ViewData["Title"] = "Đặt hàng thành công";
+}
+
+<div class="text-center py-5">
+    <h2 class="text-success">Đặt hàng thành công!</h2>
+    <p>Mã đơn hàng của bạn: <strong>#@Model.OrderId</strong></p>
+    <a asp-page="/Books/Index" class="btn btn-primary">Tiếp tục mua sắm</a>
+</div>

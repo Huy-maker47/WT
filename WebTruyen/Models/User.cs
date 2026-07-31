@@ -9,6 +9,8 @@ namespace WebTruyen.Models
         {
             Carts = new HashSet<Cart>();
             Favorites = new HashSet<Favorite>();
+            MessageReceivers = new HashSet<Message>();
+            MessageSenders = new HashSet<Message>();
             Orders = new HashSet<Order>();
             Reviews = new HashSet<Review>();
         }
@@ -27,6 +29,8 @@ namespace WebTruyen.Models
 
         public virtual ICollection<Cart> Carts { get; set; }
         public virtual ICollection<Favorite> Favorites { get; set; }
+        public virtual ICollection<Message> MessageReceivers { get; set; }
+        public virtual ICollection<Message> MessageSenders { get; set; }
         public virtual ICollection<Order> Orders { get; set; }
         public virtual ICollection<Review> Reviews { get; set; }
     }
