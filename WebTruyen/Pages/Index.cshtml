@@ -38,6 +38,21 @@
         </div>
     }
 </div>
+<hr class="my-5" />
+
+<div class="row g-4 mb-5">
+
+    <div class="col-lg-6">
+        <vc:best-selling-books count="4">
+        </vc:best-selling-books>
+    </div>
+
+    <div class="col-lg-6">
+        <vc:new-updated-books count="4">
+        </vc:new-updated-books>
+    </div>
+
+</div>
 
 @if (!Model.FeaturedBooks.Any())
 {
