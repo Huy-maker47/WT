@@ -195,7 +195,31 @@
         </div>
 
     </div>
-</form>
+</form>@if (Model.TotalItems > 0)
+{
+    var firstItem =
+        ((Model.PageNumber - 1) * Model.PageSize) + 1;
+
+    var lastItem =
+        Math.Min(
+            Model.PageNumber * Model.PageSize,
+            Model.TotalItems
+        );
+
+    <div class="books-result-information">
+        <span>
+            Hiển thị
+            <strong>@firstItem–@lastItem</strong>
+            trong tổng số
+            <strong>@Model.TotalItems</strong>
+            cuốn sách
+        </span>
+
+        <span>
+            Trang @Model.PageNumber / @Model.TotalPages
+        </span>
+    </div>
+}
 @* <form method="get" class="row mb-4">
     <div class="col-md-4">
         <select name="categoryId"
@@ -286,6 +310,104 @@ else
                     </div>
                 </div>
             </div>
-        }
+                }
     </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="books-pagination"
+             aria-label="Phân trang danh sách sách">
+
+            <!-- Trang trước -->
+            @if (Model.PageNumber > 1)
+            {
+                <a asp-page="/Books/Index"
+                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                   asp-route-categoryId="@Model.CategoryId"
+                   asp-route-keyword="@Model.Keyword"
+                   asp-route-authorName="@Model.AuthorName"
+                   asp-route-sort="@Model.Sort"
+                   asp-route-minPrice="@Model.MinPrice"
+                   asp-route-maxPrice="@Model.MaxPrice"
+                   class="books-pagination-button"
+                   aria-label="Trang trước">
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="m15 18-6-6 6-6"></path>
+                    </svg>
+                </a>
+            }
+            else
+            {
+                <span class="books-pagination-button disabled">
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="m15 18-6-6 6-6"></path>
+                    </svg>
+                </span>
+            }
+
+            <!-- Các số trang -->
+            @for (
+                int pageNumber = 1;
+                pageNumber <= Model.TotalPages;
+                pageNumber++
+                )
+            {
+                if (pageNumber == Model.PageNumber)
+                {
+                    <span class="books-pagination-number active">
+                        @pageNumber
+                    </span>
+                }
+                else
+                {
+                    <a asp-page="/Books/Index"
+                       asp-route-pageNumber="@pageNumber"
+                       asp-route-categoryId="@Model.CategoryId"
+                       asp-route-keyword="@Model.Keyword"
+                       asp-route-authorName="@Model.AuthorName"
+                       asp-route-sort="@Model.Sort"
+                       asp-route-minPrice="@Model.MinPrice"
+                       asp-route-maxPrice="@Model.MaxPrice"
+                       class="books-pagination-number">
+
+                        @pageNumber
+                    </a>
+                }
+            }
+
+            <!-- Trang sau -->
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+                <a asp-page="/Books/Index"
+                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                   asp-route-categoryId="@Model.CategoryId"
+                   asp-route-keyword="@Model.Keyword"
+                   asp-route-authorName="@Model.AuthorName"
+                   asp-route-sort="@Model.Sort"
+                   asp-route-minPrice="@Model.MinPrice"
+                   asp-route-maxPrice="@Model.MaxPrice"
+                   class="books-pagination-button"
+                   aria-label="Trang tiếp theo">
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </a>
+            }
+            else
+            {
+                <span class="books-pagination-button disabled">
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </span>
+            }
+
+        </nav>
+    }
 }

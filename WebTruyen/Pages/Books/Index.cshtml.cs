@@ -15,7 +15,6 @@ namespace WebTruyen.Pages.Books
         }
 
         public List<Book> Books { get; set; } = new();
-
         public List<Category> Categories { get; set; } = new();
 
         [BindProperty(SupportsGet = true)]
@@ -36,82 +35,112 @@ namespace WebTruyen.Pages.Books
         [BindProperty(SupportsGet = true)]
         public decimal? MaxPrice { get; set; }
 
+        [BindProperty(SupportsGet = true)]
+        public int PageNumber { get; set; } = 1;
+
+        public int PageSize { get; set; } = 10;
+
+        public int TotalItems { get; set; }
+
+        public int TotalPages { get; set; }
+
         public async Task OnGetAsync()
         {
             Categories = await _context.Categories
-                .AsNoTracking()
-                .OrderBy(c => c.CategoryName)
+                .OrderBy(category => category.CategoryName)
                 .ToListAsync();
 
             var query = _context.Books
                 .AsNoTracking()
-                .Include(b => b.Category)
-                .Where(b => b.IsActive == true)
+                .Include(book => book.Category)
+                .Where(book => book.IsActive == true)
                 .AsQueryable();
 
-            // Lọc thể loại
+            // Lọc theo danh mục
             if (CategoryId.HasValue)
             {
-                query = query.Where(
-                    b => b.CategoryId == CategoryId.Value);
+                query = query.Where(book =>
+                    book.CategoryId == CategoryId.Value
+                );
             }
 
-            // Lọc theo tác giả
+            // Lọc chính xác theo tác giả khi bấm tên tác giả
             if (!string.IsNullOrWhiteSpace(AuthorName))
             {
-                query = query.Where(
-                    b => b.Author == AuthorName);
+                query = query.Where(book =>
+                    book.Author == AuthorName
+                );
             }
             // Tìm gần đúng theo tên sách hoặc tác giả
             else if (!string.IsNullOrWhiteSpace(Keyword))
             {
-                query = query.Where(
-                    b => b.Title.Contains(Keyword) ||
-                         b.Author.Contains(Keyword));
-            }
+                string keyword = Keyword.Trim();
 
-            // Nếu nhập giá nhỏ nhất lớn hơn giá lớn nhất thì đổi lại
-            if (MinPrice.HasValue &&
-                MaxPrice.HasValue &&
-                MinPrice.Value > MaxPrice.Value)
-            {
-                (MinPrice, MaxPrice) = (MaxPrice, MinPrice);
+                query = query.Where(book =>
+                    book.Title.Contains(keyword) ||
+                    book.Author.Contains(keyword)
+                );
             }
 
             // Lọc giá tối thiểu
             if (MinPrice.HasValue)
             {
-                query = query.Where(
-                    b => b.Price >= MinPrice.Value);
+                query = query.Where(book =>
+                    book.Price >= MinPrice.Value
+                );
             }
 
             // Lọc giá tối đa
             if (MaxPrice.HasValue)
             {
-                query = query.Where(
-                    b => b.Price <= MaxPrice.Value);
+                query = query.Where(book =>
+                    book.Price <= MaxPrice.Value
+                );
             }
 
             // Sắp xếp
             query = Sort switch
             {
-                "title_az" =>
-                    query.OrderBy(b => b.Title),
+                "title_az" => query
+                    .OrderBy(book => book.Title),
 
-                "title_za" =>
-                    query.OrderByDescending(b => b.Title),
+                "title_za" => query
+                    .OrderByDescending(book => book.Title),
 
-                "price_asc" =>
-                    query.OrderBy(b => b.Price),
+                "price_asc" => query
+                    .OrderBy(book => book.Price),
 
-                "price_desc" =>
-                    query.OrderByDescending(b => b.Price),
+                "price_desc" => query
+                    .OrderByDescending(book => book.Price),
 
-                _ =>
-                    query.OrderByDescending(b => b.CreatedDate)
+                _ => query
+                    .OrderByDescending(book => book.CreatedDate)
+                    .ThenByDescending(book => book.BookId)
             };
 
-            Books = await query.ToListAsync();
+            // Đếm tổng số sách sau khi lọc
+            TotalItems = await query.CountAsync();
+
+            TotalPages = (int)Math.Ceiling(
+                TotalItems / (double)PageSize
+            );
+
+            // Không cho số trang nhỏ hơn 1
+            if (PageNumber < 1)
+            {
+                PageNumber = 1;
+            }
+
+            // Không cho vượt quá trang cuối
+            if (TotalPages > 0 && PageNumber > TotalPages)
+            {
+                PageNumber = TotalPages;
+            }
+
+            Books = await query
+                .Skip((PageNumber - 1) * PageSize)
+                .Take(PageSize)
+                .ToListAsync();
         }
     }
 }

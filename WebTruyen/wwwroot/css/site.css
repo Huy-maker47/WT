@@ -10725,3 +10725,127 @@ footer.footer {
         grid-template-columns: 1fr;
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   BOOKS PAGINATION
+   ========================================================= */
+
+.books-result-information {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin: -7px 0 18px;
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+}
+
+    .books-result-information strong {
+        color: var(--ink);
+        font-weight: 700;
+    }
+
+/* Khung phân trang */
+
+.books-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 9px;
+    padding: 24px 0 10px;
+}
+
+/* Nút số trang và nút mũi tên */
+
+.books-pagination-number,
+.books-pagination-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 39px;
+    height: 39px;
+    padding: 0 10px;
+    color: var(--forest-dark);
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.17s ease, background-color 0.17s ease, border-color 0.17s ease, box-shadow 0.17s ease, transform 0.17s ease;
+}
+
+    .books-pagination-number:hover,
+    .books-pagination-button:hover {
+        color: var(--forest-dark);
+        background: rgba(212, 179, 84, 0.13);
+        border-color: var(--brass);
+        box-shadow: 0 5px 13px rgba(33, 29, 26, 0.08);
+        transform: translateY(-1px);
+    }
+
+    /* Trang hiện tại */
+
+    .books-pagination-number.active {
+        color: var(--cream);
+        background: var(--forest);
+        border-color: var(--forest);
+        box-shadow: 0 6px 15px rgba(47, 75, 60, 0.17);
+        cursor: default;
+    }
+
+    /* Trang đầu/cuối không bấm được */
+
+    .books-pagination-button.disabled {
+        color: #aaa196;
+        background: #eee8dc;
+        border-color: #ddd4c5;
+        cursor: not-allowed;
+        opacity: 0.65;
+    }
+
+    /* Icon */
+
+    .books-pagination-button svg {
+        width: 17px;
+        height: 17px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+
+@media (max-width: 575.98px) {
+    .books-result-information {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .books-pagination {
+        gap: 5px;
+    }
+
+    .books-pagination-number,
+    .books-pagination-button {
+        min-width: 35px;
+        height: 35px;
+        padding: 0 8px;
+    }
+}
