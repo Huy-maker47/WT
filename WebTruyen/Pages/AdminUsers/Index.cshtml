@@ -1,59 +1,592 @@
 ﻿@page
 @model WebTruyen.Pages.AdminUsers.IndexModel
+
 @{
     ViewData["Title"] = "Quản lý người dùng";
     Layout = "_AdminLayout";
+
+    var totalUsers = Model.Users.Count;
+
+    var customerCount = Model.Users.Count(
+        user => user.Role == "Customer"
+    );
+
+    var managementCount = Model.Users.Count(
+        user =>
+            user.Role == "Admin" ||
+            user.Role == "Staff"
+    );
+
+    var lockedCount = Model.Users.Count(
+        user => user.IsActive != true
+    );
+
+    var orderedUsers = Model.Users
+        .OrderByDescending(user => user.CreatedDate)
+        .ThenByDescending(user => user.UserId)
+        .ToList();
 }
 
-<h2>Quản lý người dùng</h2>
+<div class="admin-users-page">
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Họ tên</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Trạng thái</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var u in Model.Users)
-        {
-            <tr>
-                <td>@u.Username</td>
-                <td>@u.FullName</td>
-                <td>@u.Email</td>
-                <td>
-                    <form method="post" asp-page-handler="ChangeRole" class="d-flex gap-1">
-                        <input type="hidden" name="userId" value="@u.UserId" />
-                        <select name="role" class="form-select form-select-sm">
-                            <option value="Customer" selected="@(u.Role == "Customer")">Customer</option>
-                            <option value="Staff" selected="@(u.Role == "Staff")">Staff</option>
-                            <option value="Admin" selected="@(u.Role == "Admin")">Admin</option>
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-secondary">Lưu</button>
-                    </form>
-                </td>
-                <td>
-                    @if (u.IsActive == true)
-                    {
-                        <span class="badge bg-success">Hoạt động</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Đã khóa</span>
-                    }
-                </td>
-                <td>
-                    <form method="post" asp-page-handler="ToggleActive" asp-route-id="@u.UserId">
-                        <button type="submit" class="btn btn-sm btn-warning">
-                            @(u.IsActive == true ? "Khóa" : "Mở khóa")
-                        </button>
-                    </form>
-                </td>
-            </tr>
+    <!-- Tiêu đề -->
+    <header class="admin-users-header">
+
+        <div>
+            <span class="admin-users-eyebrow">
+                QUẢN TRỊ TÀI KHOẢN
+            </span>
+
+            <h1>Quản lý người dùng</h1>
+
+            <p>
+                Theo dõi thông tin, phân quyền và trạng thái
+                tài khoản trong hệ thống.
+            </p>
+        </div>
+
+        <a asp-page="/AdminUsers/Index"
+           class="admin-users-refresh">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M20 6v5h-5"></path>
+                <path d="M4 18v-5h5"></path>
+                <path d="M6.2 9a7 7 0 0 1 11.3-2.5L20 11"></path>
+                <path d="M4 13l2.5 4.5A7 7 0 0 0 18 15"></path>
+            </svg>
+
+            Làm mới
+        </a>
+
+    </header>
+
+    <!-- Thống kê -->
+    <section class="admin-users-statistics">
+
+        <article class="admin-users-stat-card">
+
+            <span class="admin-users-stat-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="12"
+                            cy="8"
+                            r="4"></circle>
+                    <path d="M4 21a8 8 0 0 1 16 0"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Tổng tài khoản</span>
+                <strong>@totalUsers</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-users-stat-card">
+
+            <span class="admin-users-stat-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="9"
+                            cy="8"
+                            r="3"></circle>
+                    <circle cx="17"
+                            cy="9"
+                            r="2"></circle>
+                    <path d="M3 20a6 6 0 0 1 12 0"></path>
+                    <path d="M15 15a5 5 0 0 1 6 5"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Khách hàng</span>
+                <strong>@customerCount</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-users-stat-card">
+
+            <span class="admin-users-stat-icon management">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M12 3 5 6v5c0 4.5 3 8 7 10 4-2 7-5.5 7-10V6Z"></path>
+                    <path d="m9 12 2 2 4-5"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Quản trị và nhân viên</span>
+                <strong>@managementCount</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-users-stat-card">
+
+            <span class="admin-users-stat-icon locked">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <rect x="5"
+                          y="10"
+                          width="14"
+                          height="10"
+                          rx="2"></rect>
+                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Tài khoản đã khóa</span>
+                <strong>@lockedCount</strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    @if (!Model.Users.Any())
+    {
+        <section class="admin-users-empty">
+
+            <span class="admin-users-empty-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="12"
+                            cy="8"
+                            r="4"></circle>
+                    <path d="M4 21a8 8 0 0 1 16 0"></path>
+                </svg>
+            </span>
+
+            <h2>Chưa có tài khoản</h2>
+
+            <p>
+                Tài khoản mới sẽ xuất hiện tại đây.
+            </p>
+
+        </section>
+    }
+    else
+    {
+        <!-- Bộ lọc -->
+        <section class="admin-users-toolbar">
+
+            <label class="admin-users-search">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="11"
+                            cy="11"
+                            r="7"></circle>
+                    <path d="m20 20-4-4"></path>
+                </svg>
+
+                <input type="search"
+                       id="adminUserSearch"
+                       placeholder="Tìm username, họ tên hoặc email..."
+                       autocomplete="off" />
+
+            </label>
+
+            <select id="adminUserRoleFilter"
+                    class="admin-users-filter">
+
+                <option value="all">
+                    Tất cả vai trò
+                </option>
+
+                <option value="Customer">
+                    Customer
+                </option>
+
+                <option value="Admin">
+                    Admin
+                </option>
+
+            </select>
+
+            <select id="adminUserStatusFilter"
+                    class="admin-users-filter">
+
+                <option value="all">
+                    Tất cả trạng thái
+                </option>
+
+                <option value="active">
+                    Đang hoạt động
+                </option>
+
+                <option value="locked">
+                    Đã khóa
+                </option>
+
+            </select>
+
+            <span class="admin-users-result-count"
+                  id="adminUserResultCount">
+                @totalUsers tài khoản
+            </span>
+
+        </section>
+
+        <!-- Bảng -->
+        <section class="admin-users-table-card">
+
+            <div class="admin-users-table-wrapper">
+
+                <table class="admin-users-table">
+
+                    <thead>
+                        <tr>
+                            <th>Người dùng</th>
+                            <th>Liên hệ</th>
+                            <th>Ngày tạo</th>
+                            <th>Vai trò</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var user in orderedUsers)
+                        {
+                            var isActive =
+                            user.IsActive == true;
+
+                            var userStatus =
+                            isActive
+                            ? "active"
+                            : "locked";
+
+                            var initialSource =
+                            !string.IsNullOrWhiteSpace(user.FullName)
+                            ? user.FullName
+                            : user.Username;
+
+                            var initial =
+                            initialSource.Trim()
+                            .Substring(0, 1)
+                            .ToUpper();
+
+                            var searchText =
+                            $"{user.Username} {user.FullName} {user.Email} {user.Phone}"
+                            .ToLowerInvariant();
+
+                            <tr data-user-row
+                                data-role="@(user.Role ?? "")"
+                                data-status="@userStatus"
+                                data-search="@searchText">
+
+                                <!-- Người dùng -->
+                                <td>
+
+                                    <div class="admin-user-identity">
+
+                                        <span class="admin-user-avatar">
+                                            @initial
+                                        </span>
+
+                                        <div>
+                                            <strong>
+                                                @user.FullName
+                                            </strong>
+
+                                            <span>
+                                                @($"@{user.Username}")
+                                            </span>
+
+                                            <small>
+                                                ID: #@user.UserId
+                                            </small>
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- Liên hệ -->
+                                <td>
+
+                                    <div class="admin-user-contact">
+
+                                        <span>
+                                            @user.Email
+                                        </span>
+
+                                        <small>
+                                            @(string.IsNullOrWhiteSpace(user.Phone)
+                                                                                ? "Chưa có số điện thoại"
+                                                                                : user.Phone)
+                                                                                         </small>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- Ngày tạo -->
+                                <td class="admin-user-created-date">
+
+                                    @(user.CreatedDate?.ToString(
+                                                                "dd/MM/yyyy"
+                                                                ) ?? "Chưa có")
+
+                        </td>
+
+                                <!-- Role -->
+                                <td>
+
+                                    <form method="post"
+                                          asp-page-handler="ChangeRole"
+                                          class="admin-user-role-form">
+
+                                        <input type="hidden"
+                                               name="userId"
+                                               value="@user.UserId" />
+
+                                        <select name="role"
+                                                aria-label="Vai trò của @user.Username">
+
+                                            <option value="Customer"
+                                                    selected="@(user.Role == "Customer"
+                                                                                                            ? "selected"
+                                                                                                            : null)">
+                                        Customer
+                                    </option>
+
+                                            <option value="Admin"
+                                                    selected="@(user.Role == "Admin"
+                                                                                                            ? "selected"
+                                                                                                            : null)">
+                                        Admin
+                                    </option>
+
+                                        </select>
+
+                                        <button type="submit"
+                                                title="Lưu vai trò">
+
+                                            <svg viewBox="0 0 24 24"
+                                                 aria-hidden="true">
+                                                <path d="M5 4h12l2 2v14H5Z"></path>
+                                                <path d="M8 4v6h8V4"></path>
+                                            </svg>
+
+                                            Lưu
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                                <!-- Trạng thái -->
+                                <td>
+
+                            @if (isActive)
+                                    {
+                                        <span class="admin-user-status active">
+                                            <i></i>
+                                            Hoạt động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="admin-user-status locked">
+                                            <i></i>
+                                            Đã khóa
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- Khóa / mở khóa -->
+                                <td>
+
+                                    <form method="post"
+                                          asp-page-handler="ToggleActive"
+                                          asp-route-id="@user.UserId"
+                                          onsubmit="return confirm('Xác nhận thay đổi trạng thái tài khoản này?');">
+
+                                        @if (isActive)
+                                        {
+                                            <button type="submit"
+                                                    class="admin-user-action lock">
+
+                                                <svg viewBox="0 0 24 24"
+                                                     aria-hidden="true">
+                                                    <rect x="5"
+                                                          y="10"
+                                                          width="14"
+                                                          height="10"
+                                                          rx="2"></rect>
+                                                    <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+                                                </svg>
+
+                                                Khóa
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="submit"
+                                                    class="admin-user-action unlock">
+
+                                                <svg viewBox="0 0 24 24"
+                                                     aria-hidden="true">
+                                                    <rect x="5"
+                                                          y="10"
+                                                          width="14"
+                                                          height="10"
+                                                          rx="2"></rect>
+                                                    <path d="M8 10V7a4 4 0 0 1 7-2.5"></path>
+                                                </svg>
+
+                                                Mở khóa
+                                            </button>
+                                        }
+
+                                    </form>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="admin-users-filter-empty"
+                 id="adminUsersFilterEmpty"
+                 hidden>
+
+                Không tìm thấy tài khoản phù hợp.
+
+            </div>
+
+        </section>
+
+        <div class="admin-users-note">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="12"
+                        cy="12"
+                        r="9"></circle>
+                <path d="M12 11v5"></path>
+                <path d="M12 8h.01"></path>
+            </svg>
+
+            Chỉ tài khoản Admin mới có quyền truy cập trang này.
+            Hãy kiểm tra kỹ trước khi đổi vai trò hoặc khóa tài khoản.
+
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        const userSearch =
+            document.getElementById(
+                "adminUserSearch"
+            );
+
+        const roleFilter =
+            document.getElementById(
+                "adminUserRoleFilter"
+            );
+
+        const statusFilter =
+            document.getElementById(
+                "adminUserStatusFilter"
+            );
+
+        const userRows =
+            document.querySelectorAll(
+                "[data-user-row]"
+            );
+
+        const resultCount =
+            document.getElementById(
+                "adminUserResultCount"
+            );
+
+        const emptyResult =
+            document.getElementById(
+                "adminUsersFilterEmpty"
+            );
+
+        function filterAdminUsers() {
+            const keyword =
+                userSearch.value
+                    .trim()
+                    .toLocaleLowerCase("vi-VN");
+
+            const selectedRole =
+                roleFilter.value;
+
+            const selectedStatus =
+                statusFilter.value;
+
+            let visibleCount = 0;
+
+            userRows.forEach(function (row) {
+                const searchText =
+                    row.dataset.search || "";
+
+                const rowRole =
+                    row.dataset.role || "";
+
+                const rowStatus =
+                    row.dataset.status || "";
+
+                const matchesKeyword =
+                    searchText.includes(keyword);
+
+                const matchesRole =
+                    selectedRole === "all" ||
+                    rowRole === selectedRole;
+
+                const matchesStatus =
+                    selectedStatus === "all" ||
+                    rowStatus === selectedStatus;
+
+                const shouldShow =
+                    matchesKeyword &&
+                    matchesRole &&
+                    matchesStatus;
+
+                row.hidden = !shouldShow;
+
+                if (shouldShow) {
+                    visibleCount++;
+                }
+            });
+
+            resultCount.textContent =
+                visibleCount + " tài khoản";
+
+            emptyResult.hidden =
+                visibleCount !== 0;
         }
-    </tbody>
-</table>
+
+        userSearch.addEventListener(
+            "input",
+            filterAdminUsers
+        );
+
+        roleFilter.addEventListener(
+            "change",
+            filterAdminUsers
+        );
+
+        statusFilter.addEventListener(
+            "change",
+            filterAdminUsers
+        );
+    </script>
+}

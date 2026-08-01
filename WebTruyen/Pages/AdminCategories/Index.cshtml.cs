@@ -38,7 +38,8 @@ namespace WebTruyen.Pages.AdminCategories
             }
 
             _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(); TempData["Success"] =
+    $"Đã xóa danh mục \"{category.CategoryName}\".";
             return RedirectToPage();
         }
     }

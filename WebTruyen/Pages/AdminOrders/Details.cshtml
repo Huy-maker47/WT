@@ -1,242 +1,290 @@
 ﻿@page "{id:int}"
 @model WebTruyen.Pages.AdminOrders.DetailsModel
+
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
     Layout = "_AdminLayout";
+
+    var orderStatus = Model.OrderData.Status ?? "Chưa cập nhật";
+    var paymentStatus = Model.OrderData.PaymentStatus ?? "Chưa cập nhật";
+
+    var statusClass = orderStatus switch
+    {
+        "Chờ xác nhận" => "waiting",
+        "Đang giao" => "shipping",
+        "Hoàn thành" => "completed",
+        "Đã hủy" => "cancelled",
+        _ => "default"
+    };
+
+    var paymentClass = paymentStatus switch
+    {
+        "Đã thanh toán" => "paid",
+        "Chờ thanh toán" => "waiting",
+        "Chờ xác nhận thanh toán" => "waiting",
+        "Chưa nhận được tiền" => "failed",
+        _ => "unpaid"
+    };
 }
 
-<h2>Đơn hàng #@Model.OrderData.OrderId</h2>
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["Success"]
-    </div>
-}
+<div class="order-detail-page">
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["Error"]
-    </div>
-}
+    <!-- Tiêu đề -->
+    <header class="order-detail-header">
 
-<div class="row mb-3">
-    <div class="col-md-6">
-        <p><strong>Người nhận:</strong> @Model.OrderData.ReceiverName</p>
-        <p><strong>SĐT:</strong> @Model.OrderData.ReceiverPhone</p>
-        <p><strong>Địa chỉ:</strong> @Model.OrderData.ShippingAddress</p>
-        <p><strong>Ghi chú:</strong> @Model.OrderData.Note</p>
-    </div>
-    <div class="col-md-6">
-        <p><strong>Ngày đặt:</strong> @Model.OrderData.OrderDate?.ToString("dd/MM/yyyy HH:mm")</p>
-        <p>
-            <strong>Phương thức thanh toán:</strong>
+        <div>
+            <a asp-page="Index"
+               class="order-detail-back">
+                ← Quay lại danh sách
+            </a>
 
-            @if (Model.OrderData.PaymentMethod == "Chuyển khoản")
-            {
-                <span class="badge bg-primary">
-                    Chuyển khoản ngân hàng
-                </span>
-            }
-            else
-            {
-                <span class="badge bg-secondary">
-                    COD
-                </span>
-            }
-        </p>
+            <h1>Đơn hàng #@Model.OrderData.OrderId</h1>
 
-        @if (Model.OrderData.PaymentMethod == "Chuyển khoản")
-        {
-            <div class="card border-primary mb-3">
-                <div class="card-header bg-primary text-white">
-                    Xác nhận chuyển khoản
+            <p>
+                Đặt lúc
+                @Model.OrderData.OrderDate?.ToString("HH:mm, dd/MM/yyyy")
+            </p>
+        </div>
+
+        <span class="order-detail-status @statusClass">
+            @orderStatus
+        </span>
+
+    </header>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="order-detail-alert success">
+            @TempData["Success"]
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="order-detail-alert error">
+            @TempData["Error"]
+        </div>
+    }
+
+    <div class="order-detail-top">
+
+        <!-- Thông tin nhận hàng -->
+        <section class="order-detail-card">
+
+            <header class="order-detail-card-header">
+                <h2>Thông tin nhận hàng</h2>
+                <span>Thông tin khách cung cấp</span>
+            </header>
+
+            <div class="order-detail-information">
+
+                <div class="order-detail-info-row">
+                    <span>Người nhận</span>
+                    <strong>@Model.OrderData.ReceiverName</strong>
                 </div>
 
-                <div class="card-body">
-
-                    <p class="mb-2">
-                        <strong>Mã đơn:</strong>
-                        #@Model.OrderData.OrderId
-                    </p>
-
-                    <p class="mb-2">
-                        <strong>Nội dung chuyển khoản:</strong>
-
-                        <code>
-                            METRUYEN ORD@(Model.OrderData.OrderId)
-                        </code>
-                    </p>
-
-                    <p class="mb-3">
-                        <strong>Số tiền cần nhận:</strong>
-
-                        <span class="text-danger fw-bold">
-                            @Model.OrderData.TotalAmount.ToString("N0") đ
-                        </span>
-                    </p>
-
-                    <p>
-                        <strong>Trạng thái thanh toán:</strong>
-
-                        @if (Model.OrderData.PaymentStatus == "Đã thanh toán")
-                        {
-                            <span class="badge bg-success">
-                                Đã thanh toán
-                            </span>
-                        }
-                        else if (
-                        Model.OrderData.PaymentStatus ==
-                        "Chờ xác nhận thanh toán")
-                        {
-                            <span class="badge bg-warning text-dark">
-                                Chờ Admin xác nhận
-                            </span>
-                        }
-                        else if (
-                        Model.OrderData.PaymentStatus ==
-                        "Chưa nhận được tiền")
-                        {
-                            <span class="badge bg-danger">
-                                Chưa nhận được tiền
-                            </span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-secondary">
-                                @Model.OrderData.PaymentStatus
-                            </span>
-                        }
-                    </p>
-
-                    @if (
-                                    Model.OrderData.PaymentStatus ==
-                                    "Chờ xác nhận thanh toán")
-                    {
-                        <div class="d-flex flex-wrap gap-2">
-
-                            <form method="post"
-                                  asp-page-handler="ConfirmBankTransfer"
-                                  onsubmit="return confirm('Xác nhận đã nhận đủ tiền cho đơn hàng này?');">
-
-                                <input type="hidden"
-                                       name="orderId"
-                                       value="@Model.OrderData.OrderId" />
-
-                                <button type="submit"
-                                        class="btn btn-success">
-                                    Xác nhận đã nhận tiền
-                                </button>
-                            </form>
-
-                            <form method="post"
-                                  asp-page-handler="RejectBankTransfer"
-                                  onsubmit="return confirm('Xác nhận chưa nhận được tiền?');">
-
-                                <input type="hidden"
-                                       name="orderId"
-                                       value="@Model.OrderData.OrderId" />
-
-                                <button type="submit"
-                                        class="btn btn-outline-danger">
-                                    Chưa nhận được tiền
-                                </button>
-                            </form>
-
-                        </div>
-                    }
+                <div class="order-detail-info-row">
+                    <span>Số điện thoại</span>
+                    <strong>@Model.OrderData.ReceiverPhone</strong>
                 </div>
+
+                <div class="order-detail-info-row full">
+                    <span>Địa chỉ</span>
+                    <strong>@Model.OrderData.ShippingAddress</strong>
+                </div>
+
+                <div class="order-detail-info-row full">
+                    <span>Ghi chú</span>
+
+                    <strong class="order-detail-note">
+                        @(string.IsNullOrWhiteSpace(Model.OrderData.Note)
+                                                ? "Không có ghi chú"
+                                                : Model.OrderData.Note)
+                    </strong>
+                </div>
+
             </div>
-        }
-        else
-        {
-            <!-- COD vẫn cập nhật thủ công như cũ -->
+
+        </section>
+
+        <!-- Cập nhật đơn -->
+        <section class="order-detail-card">
+
+            <header class="order-detail-card-header">
+                <h2>Cập nhật đơn hàng</h2>
+                <span>Phương thức: @Model.OrderData.PaymentMethod</span>
+            </header>
+
+            <div class="order-detail-payment-current">
+
+                <span>Thanh toán hiện tại</span>
+
+                <strong class="@paymentClass">
+                    @paymentStatus
+                </strong>
+
+            </div>
+
+            <!-- Trạng thái thanh toán -->
             <form method="post"
                   asp-page-handler="UpdatePaymentStatus"
-                  class="d-flex gap-2 mb-3">
+                  class="order-detail-update-form">
 
                 <input type="hidden"
                        name="orderId"
                        value="@Model.OrderData.OrderId" />
 
-                <select name="paymentStatus"
-                        class="form-select">
+                <label for="paymentStatus">
+                    Trạng thái thanh toán
+                </label>
 
-                    @if (
-                                    Model.OrderData.PaymentStatus ==
-                                    "Chưa thanh toán")
-                    {
-                        <option value="Chưa thanh toán" selected>
+                <div class="order-detail-update-control">
+
+                    <select id="paymentStatus"
+                            name="paymentStatus">
+
+                        <option value="Chưa thanh toán"
+                                selected="@(paymentStatus == "Chưa thanh toán" ? "selected" : null)">
                             Chưa thanh toán
                         </option>
-                    }
-                    else
-                    {
-                        <option value="Chưa thanh toán">
-                            Chưa thanh toán
-                        </option>
-                    }
 
-                    @if (
-                                    Model.OrderData.PaymentStatus ==
-                                    "Đã thanh toán")
-                    {
-                        <option value="Đã thanh toán" selected>
+                        <option value="Chờ thanh toán"
+                                selected="@(paymentStatus == "Chờ thanh toán" ? "selected" : null)">
+                            Chờ thanh toán
+                        </option>
+
+                        <option value="Chờ xác nhận thanh toán"
+                                selected="@(paymentStatus == "Chờ xác nhận thanh toán" ? "selected" : null)">
+                            Chờ xác nhận thanh toán
+                        </option>
+
+                        <option value="Chưa nhận được tiền"
+                                selected="@(paymentStatus == "Chưa nhận được tiền" ? "selected" : null)">
+                            Chưa nhận được tiền
+                        </option>
+
+                        <option value="Đã thanh toán"
+                                selected="@(paymentStatus == "Đã thanh toán" ? "selected" : null)">
                             Đã thanh toán
                         </option>
-                    }
-                    else
-                    {
-                        <option value="Đã thanh toán">
-                            Đã thanh toán
-                        </option>
-                    }
 
-                </select>
+                    </select>
 
-                <button type="submit"
-                        class="btn btn-secondary">
-                    Cập nhật
-                </button>
+                    <button type="submit">
+                        Lưu
+                    </button>
+
+                </div>
+
             </form>
-        }
 
-        <form method="post" asp-page-handler="UpdateStatus" class="d-flex gap-2">
-            <input type="hidden" name="orderId" value="@Model.OrderData.OrderId" />
-            <select name="status" class="form-select">
-                <option value="Chờ xác nhận" selected="@(Model.OrderData.Status == "Chờ xác nhận")">Chờ xác nhận</option>
-                <option value="Đang giao" selected="@(Model.OrderData.Status == "Đang giao")">Đang giao</option>
-                <option value="Hoàn thành" selected="@(Model.OrderData.Status == "Hoàn thành")">Hoàn thành</option>
-                <option value="Đã hủy" selected="@(Model.OrderData.Status == "Đã hủy")">Đã hủy</option>
-            </select>
-            <button type="submit" class="btn btn-sm btn-primary">Cập nhật</button>
-        </form>
+            <!-- Trạng thái đơn -->
+            <form method="post"
+                  asp-page-handler="UpdateStatus"
+                  class="order-detail-update-form">
+
+                <input type="hidden"
+                       name="orderId"
+                       value="@Model.OrderData.OrderId" />
+
+                <label for="orderStatus">
+                    Trạng thái đơn hàng
+                </label>
+
+                <div class="order-detail-update-control">
+
+                    <select id="orderStatus"
+                            name="status">
+
+                        <option value="Chờ xác nhận"
+                                selected="@(orderStatus == "Chờ xác nhận" ? "selected" : null)">
+                            Chờ xác nhận
+                        </option>
+
+                        <option value="Đang giao"
+                                selected="@(orderStatus == "Đang giao" ? "selected" : null)">
+                            Đang giao
+                        </option>
+
+                        <option value="Hoàn thành"
+                                selected="@(orderStatus == "Hoàn thành" ? "selected" : null)">
+                            Hoàn thành
+                        </option>
+
+                        <option value="Đã hủy"
+                                selected="@(orderStatus == "Đã hủy" ? "selected" : null)">
+                            Đã hủy
+                        </option>
+
+                    </select>
+
+                    <button type="submit">
+                        Lưu
+                    </button>
+
+                </div>
+
+            </form>
+
+        </section>
+
     </div>
+
+    <!-- Danh sách sản phẩm -->
+    <section class="order-detail-card order-detail-products">
+
+        <header class="order-detail-card-header">
+            <h2>Sản phẩm trong đơn</h2>
+
+            <span>
+                @Model.OrderData.OrderDetails.Sum(item => item.Quantity)
+                sản phẩm
+            </span>
+        </header>
+
+        <div class="order-detail-product-list">
+
+            @foreach (var item in Model.OrderData.OrderDetails)
+            {
+                var lineTotal = item.UnitPrice * item.Quantity;
+
+                <article class="order-detail-product">
+
+                    <img src="@(string.IsNullOrWhiteSpace(item.Book.ImageUrl)
+                                                         ? "/images/no-image.png"
+                                                         : item.Book.ImageUrl)"
+                     alt="@item.Book.Title" />
+
+                    <div class="order-detail-product-name">
+
+                        <strong>@item.Book.Title</strong>
+
+                        <span>
+                            @item.UnitPrice.ToString("N0") đ
+                            × @item.Quantity
+                        </span>
+
+                    </div>
+
+                    <strong class="order-detail-product-total">
+                        @lineTotal.ToString("N0") đ
+                    </strong>
+
+                </article>
+                        }
+
+        </div>
+
+        <footer class="order-detail-total">
+
+            <span>Tổng thanh toán</span>
+
+            <strong>
+                @Model.OrderData.TotalAmount.ToString("N0") đ
+            </strong>
+
+        </footer>
+
+    </section>
+
 </div>
-
-<h4>Chi tiết sản phẩm</h4>
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Sách</th>
-            <th>Đơn giá</th>
-            <th>Số lượng</th>
-            <th>Thành tiền</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.OrderData.OrderDetails)
-        {
-            <tr>
-                <td>@item.Book.Title</td>
-                <td>@item.UnitPrice.ToString("N0") đ</td>
-                <td>@item.Quantity</td>
-                <td>@((item.UnitPrice * item.Quantity).ToString("N0")) đ</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<h4 class="text-end">Tổng cộng: @Model.OrderData.TotalAmount.ToString("N0") đ</h4>
-
-<a asp-page="Index" class="btn btn-secondary">Quay lại danh sách</a>

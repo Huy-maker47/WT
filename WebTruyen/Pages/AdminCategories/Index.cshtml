@@ -1,40 +1,533 @@
 ﻿@page
 @model WebTruyen.Pages.AdminCategories.IndexModel
+
 @{
     ViewData["Title"] = "Quản lý danh mục";
     Layout = "_AdminLayout";
+
+    var totalCategories = Model.Categories.Count;
+
+    var usedCategories = Model.Categories.Count(
+        category => category.Books.Count > 0
+    );
+
+    var emptyCategories = Model.Categories.Count(
+        category => category.Books.Count == 0
+    );
+
+    var totalBooks = Model.Categories.Sum(
+        category => category.Books.Count
+    );
 }
 
-<h2>Quản lý danh mục</h2>
-<a asp-page="Create" class="btn btn-primary mb-3">+ Thêm danh mục</a>
+<div class="admin-category-page">
 
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+    <!-- Tiêu đề -->
+    <header class="admin-category-header">
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Tên danh mục</th>
-            <th>Số sách</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var cate in Model.Categories)
-        {
-            <tr>
-                <td>@cate.CategoryName</td>
-                <td>@cate.Books.Count</td>
-                <td>
-                    <a asp-page="Edit" asp-route-id="@cate.CategoryId" class="btn btn-sm btn-warning">Sửa</a>
-                    <form method="post" asp-page-handler="Delete" asp-route-id="@cate.CategoryId" class="d-inline"
-                          onsubmit="return confirm('Xác nhận xóa?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                    </form>
-                </td>
-            </tr>
+        <div>
+            <span class="admin-category-eyebrow">
+                QUẢN TRỊ KHO SÁCH
+            </span>
+
+            <h1>Quản lý danh mục</h1>
+
+            <p>
+                Tổ chức sách theo thể loại và theo dõi số lượng
+                sách trong từng danh mục.
+            </p>
+        </div>
+
+        <a asp-page="Create"
+           class="admin-category-create">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+            </svg>
+
+            Thêm danh mục
+        </a>
+
+    </header>
+
+    <!-- Thông báo -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="admin-category-alert success">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="12"
+                        cy="12"
+                        r="9"></circle>
+                <path d="m8 12 3 3 5-6"></path>
+            </svg>
+
+            @TempData["Success"]
+
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="admin-category-alert error">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="12"
+                        cy="12"
+                        r="9"></circle>
+                <path d="M12 7v6"></path>
+                <path d="M12 17h.01"></path>
+            </svg>
+
+            @TempData["Error"]
+
+        </div>
+    }
+
+    <!-- Thống kê -->
+    <section class="admin-category-statistics">
+
+        <article class="admin-category-stat-card">
+
+            <span class="admin-category-stat-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M4 4h6v6H4z"></path>
+                    <path d="M14 4h6v6h-6z"></path>
+                    <path d="M4 14h6v6H4z"></path>
+                    <path d="M14 14h6v6h-6z"></path>
+                </svg>
+
+            </span>
+
+            <div>
+                <span>Tổng danh mục</span>
+                <strong>@totalCategories</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-category-stat-card">
+
+            <span class="admin-category-stat-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M3 5h7a3 3 0 0 1 3 3v12a3 3 0 0 0-3-3H3Z"></path>
+                    <path d="M21 5h-7a3 3 0 0 0-3 3v12a3 3 0 0 1 3-3h7Z"></path>
+                </svg>
+
+            </span>
+
+            <div>
+                <span>Tổng số sách</span>
+                <strong>@totalBooks</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-category-stat-card">
+
+            <span class="admin-category-stat-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="12"
+                            cy="12"
+                            r="9"></circle>
+                    <path d="m8 12 3 3 5-6"></path>
+                </svg>
+
+            </span>
+
+            <div>
+                <span>Đang sử dụng</span>
+                <strong>@usedCategories</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-category-stat-card">
+
+            <span class="admin-category-stat-icon warning">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M4 6h16v12H4z"></path>
+                    <path d="M8 10h8"></path>
+                </svg>
+
+            </span>
+
+            <div>
+                <span>Danh mục trống</span>
+                <strong>@emptyCategories</strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    @if (!Model.Categories.Any())
+    {
+        <section class="admin-category-empty">
+
+            <span>
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M4 4h6v6H4z"></path>
+                    <path d="M14 4h6v6h-6z"></path>
+                    <path d="M4 14h6v6H4z"></path>
+                    <path d="M14 14h6v6h-6z"></path>
+                </svg>
+            </span>
+
+            <h2>Chưa có danh mục</h2>
+
+            <p>
+                Hãy tạo danh mục đầu tiên để phân loại sách.
+            </p>
+
+            <a asp-page="Create">
+                Thêm danh mục
+            </a>
+
+        </section>
+    }
+    else
+    {
+        <!-- Tìm kiếm và lọc -->
+        <section class="admin-category-toolbar">
+
+            <label class="admin-category-search">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="11"
+                            cy="11"
+                            r="7"></circle>
+                    <path d="m20 20-4-4"></path>
+                </svg>
+
+                <input type="search"
+                       id="categorySearch"
+                       placeholder="Tìm tên danh mục..."
+                       autocomplete="off" />
+
+            </label>
+
+            <select id="categoryStatusFilter"
+                    class="admin-category-filter">
+
+                <option value="all">
+                    Tất cả danh mục
+                </option>
+
+                <option value="used">
+                    Đang có sách
+                </option>
+
+                <option value="empty">
+                    Chưa có sách
+                </option>
+
+            </select>
+
+            <span class="admin-category-result-count"
+                  id="categoryResultCount">
+
+                @totalCategories danh mục
+
+            </span>
+
+        </section>
+
+        <!-- Danh sách -->
+        <section class="admin-category-table-card">
+
+            <div class="admin-category-table-wrapper">
+
+                <table class="admin-category-table">
+
+                    <thead>
+                        <tr>
+                            <th>Danh mục</th>
+                            <th>Số lượng sách</th>
+                            <th>Tình trạng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var category in Model.Categories)
+                        {
+                            var bookCount =
+                            category.Books.Count;
+
+                            var status =
+                            bookCount > 0
+                            ? "used"
+                            : "empty";
+
+                            <tr data-category-row
+                                data-status="@status"
+                                data-search="@category.CategoryName.ToLowerInvariant()">
+
+                                <!-- Danh mục -->
+                                <td>
+
+                                    <div class="admin-category-information">
+
+                                        <span class="admin-category-symbol">
+
+                                            <svg viewBox="0 0 24 24"
+                                                 aria-hidden="true">
+                                                <path d="M4 4h6v6H4z"></path>
+                                                <path d="M14 4h6v6h-6z"></path>
+                                                <path d="M4 14h6v6H4z"></path>
+                                                <path d="M14 14h6v6h-6z"></path>
+                                            </svg>
+
+                                        </span>
+
+                                        <div>
+                                            <strong>
+                                                @category.CategoryName
+                                            </strong>
+
+                                            <small>
+                                                Mã danh mục:
+                                                #@category.CategoryId
+                                            </small>
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- Số sách -->
+                                <td>
+
+                                    <div class="admin-category-book-count">
+
+                                        <strong>@bookCount</strong>
+
+                                        <span>
+                                            @(bookCount == 1
+                                                                                ? "cuốn sách"
+                                                                                : "cuốn sách")
+                                </span>
+
+                                    </div>
+
+                                </td>
+
+                                <!-- Trạng thái -->
+                                <td>
+
+                            @if (bookCount > 0)
+                                    {
+                                        <span class="admin-category-status used">
+                                            <i></i>
+                                            Đang sử dụng
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="admin-category-status empty">
+                                            <i></i>
+                                            Chưa có sách
+                                        </span>
+                                    }
+
+                                </td>
+
+                                <!-- Thao tác -->
+                                <td>
+
+                                    <div class="admin-category-actions">
+
+                                        <a asp-page="Edit"
+                                           asp-route-id="@category.CategoryId"
+                                           class="admin-category-action edit">
+
+                                            <svg viewBox="0 0 24 24"
+                                                 aria-hidden="true">
+                                                <path d="M12 20h9"></path>
+                                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+                                            </svg>
+
+                                            Sửa
+                                        </a>
+
+                                        @if (bookCount == 0)
+                                        {
+                                            <form method="post"
+                                                  asp-page-handler="Delete"
+                                                  asp-route-id="@category.CategoryId"
+                                                  onsubmit="return confirm('Xóa vĩnh viễn danh mục “@category.CategoryName”?');">
+
+                                                <button type="submit"
+                                                        class="admin-category-action delete">
+
+                                                    <svg viewBox="0 0 24 24"
+                                                         aria-hidden="true">
+                                                        <path d="M4 7h16"></path>
+                                                        <path d="M9 7V4h6v3"></path>
+                                                        <path d="m7 7 1 13h8l1-13"></path>
+                                                        <path d="M10 11v5"></path>
+                                                        <path d="M14 11v5"></path>
+                                                    </svg>
+
+                                                    Xóa
+                                                </button>
+
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <button type="button"
+                                                    class="admin-category-action delete disabled"
+                                                    title="Danh mục đang có sách nên không thể xóa"
+                                                    disabled>
+
+                                                <svg viewBox="0 0 24 24"
+                                                     aria-hidden="true">
+                                                    <path d="M4 7h16"></path>
+                                                    <path d="M9 7V4h6v3"></path>
+                                                    <path d="m7 7 1 13h8l1-13"></path>
+                                                </svg>
+
+                                                Xóa
+                                            </button>
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="admin-category-filter-empty"
+                 id="categoryFilterEmpty"
+                 hidden>
+
+                Không tìm thấy danh mục phù hợp.
+
+            </div>
+
+        </section>
+
+        <div class="admin-category-note">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="12"
+                        cy="12"
+                        r="9"></circle>
+                <path d="M12 11v5"></path>
+                <path d="M12 8h.01"></path>
+            </svg>
+
+            Danh mục đang có sách sẽ không thể xóa.
+            Hãy chuyển sách sang danh mục khác trước.
+
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        const categorySearch =
+            document.getElementById(
+                "categorySearch"
+            );
+
+        const categoryFilter =
+            document.getElementById(
+                "categoryStatusFilter"
+            );
+
+        const categoryRows =
+            document.querySelectorAll(
+                "[data-category-row]"
+            );
+
+        const resultCount =
+            document.getElementById(
+                "categoryResultCount"
+            );
+
+        const emptyResult =
+            document.getElementById(
+                "categoryFilterEmpty"
+            );
+
+        function filterCategories() {
+            const keyword =
+                categorySearch.value
+                    .trim()
+                    .toLocaleLowerCase("vi-VN");
+
+            const selectedStatus =
+                categoryFilter.value;
+
+            let visibleCount = 0;
+
+            categoryRows.forEach(function (row) {
+                const searchText =
+                    row.dataset.search || "";
+
+                const rowStatus =
+                    row.dataset.status || "";
+
+                const matchesKeyword =
+                    searchText.includes(keyword);
+
+                const matchesStatus =
+                    selectedStatus === "all" ||
+                    rowStatus === selectedStatus;
+
+                const shouldShow =
+                    matchesKeyword &&
+                    matchesStatus;
+
+                row.hidden = !shouldShow;
+
+                if (shouldShow) {
+                    visibleCount++;
+                }
+            });
+
+            resultCount.textContent =
+                visibleCount + " danh mục";
+
+            emptyResult.hidden =
+                visibleCount !== 0;
         }
-    </tbody>
-</table>
+
+        categorySearch.addEventListener(
+            "input",
+            filterCategories
+        );
+
+        categoryFilter.addEventListener(
+            "change",
+            filterCategories
+        );
+    </script>
+}

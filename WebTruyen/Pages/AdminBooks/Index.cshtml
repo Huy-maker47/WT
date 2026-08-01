@@ -1,53 +1,548 @@
 ﻿@page
 @model WebTruyen.Pages.AdminBooks.IndexModel
+
 @{
     ViewData["Title"] = "Quản lý sách";
     Layout = "_AdminLayout";
+
+    var totalBooks = Model.Books.Count;
+
+    var activeBooks = Model.Books.Count(
+        book => book.IsActive == true
+    );
+
+    var hiddenBooks = Model.Books.Count(
+        book => book.IsActive != true
+    );
+
+    var lowStockBooks = Model.Books.Count(
+        book =>
+            book.IsActive == true &&
+            (book.Stock ?? 0) <= 5
+    );
 }
 
-<h2>Quản lý sách</h2>
-<a asp-page="Create" class="btn btn-primary mb-3">+ Thêm sách</a>
+<div class="admin-books-page">
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Tên sách</th>
-            <th>Tác giả</th>
-            <th>Danh mục</th>
-            <th>Giá</th>
-            <th>Tồn kho</th>
-            <th>Trạng thái</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var book in Model.Books)
-        {
-            <tr>
-                <td>@book.Title</td>
-                <td>@book.Author</td>
-                <td>@book.Category?.CategoryName</td>
-                <td>@book.Price.ToString("N0") đ</td>
-                <td>@book.Stock</td>
-                <td>
-                    @if (book.IsActive == true)
-                    {
-                        <span class="badge bg-success">Đang bán</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Đã ẩn</span>
-                    }
-                </td>
-                <td>
-                    <a asp-page="Edit" asp-route-id="@book.BookId" class="btn btn-sm btn-warning">Sửa</a>
-                    <form method="post" asp-page-handler="ToggleActive" asp-route-id="@book.BookId" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-secondary">
-                            @(book.IsActive == true ? "Ẩn" : "Hiện")
-                        </button>
-                    </form>
-                </td>
-            </tr>
+    <!-- Tiêu đề -->
+    <header class="admin-books-header">
+
+        <div>
+            <span class="admin-books-eyebrow">
+                QUẢN TRỊ KHO SÁCH
+            </span>
+
+            <h1>Quản lý sách</h1>
+
+            <p>
+                Theo dõi giá bán, tồn kho và trạng thái
+                hiển thị của từng cuốn sách.
+            </p>
+        </div>
+
+        <a asp-page="Create"
+           class="admin-books-create-button">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M12 5v14"></path>
+                <path d="M5 12h14"></path>
+            </svg>
+
+            Thêm sách mới
+        </a>
+
+    </header>
+
+    <!-- Thông báo -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="admin-books-alert success">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="12"
+                        cy="12"
+                        r="9"></circle>
+                <path d="m8 12 3 3 5-6"></path>
+            </svg>
+
+            <span>@TempData["Success"]</span>
+
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="admin-books-alert error">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="12"
+                        cy="12"
+                        r="9"></circle>
+                <path d="M12 7v6"></path>
+                <path d="M12 17h.01"></path>
+            </svg>
+
+            <span>@TempData["Error"]</span>
+
+        </div>
+    }
+
+    <!-- Thống kê -->
+    <section class="admin-books-statistics">
+
+        <article class="admin-books-stat-card">
+
+            <span class="admin-books-stat-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 5h7a3 3 0 0 1 3 3v12a3 3 0 0 0-3-3H3Z"></path>
+                    <path d="M21 5h-7a3 3 0 0 0-3 3v12a3 3 0 0 1 3-3h7Z"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Tổng số sách</span>
+                <strong>@totalBooks</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-books-stat-card">
+
+            <span class="admin-books-stat-icon">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12"
+                            cy="12"
+                            r="9"></circle>
+                    <path d="m8 12 3 3 5-6"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Đang bán</span>
+                <strong>@activeBooks</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-books-stat-card">
+
+            <span class="admin-books-stat-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 3l18 18"></path>
+                    <path d="M10.5 10.7a2 2 0 0 0 2.8 2.8"></path>
+                    <path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c5.5 0 9 5 9 5a16 16 0 0 1-2.1 2.6"></path>
+                    <path d="M6.6 6.7C4.2 8.3 3 11 3 11s3.5 5 9 5c1 0 2-.2 2.8-.5"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Đã ẩn</span>
+                <strong>@hiddenBooks</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-books-stat-card">
+
+            <span class="admin-books-stat-icon warning">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3 2.5 20h19Z"></path>
+                    <path d="M12 9v4"></path>
+                    <path d="M12 17h.01"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Sắp hết hàng</span>
+                <strong>@lowStockBooks</strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    <!-- Tìm kiếm và lọc -->
+    <section class="admin-books-toolbar">
+
+        <label class="admin-books-search">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="11"
+                        cy="11"
+                        r="7"></circle>
+                <path d="m20 20-4-4"></path>
+            </svg>
+
+            <input type="search"
+                   id="adminBookSearch"
+                   placeholder="Tìm tên sách, tác giả hoặc danh mục..."
+                   autocomplete="off" />
+
+        </label>
+
+        <select id="adminBookStatusFilter"
+                class="admin-books-status-filter">
+
+            <option value="all">
+                Tất cả trạng thái
+            </option>
+
+            <option value="active">
+                Đang bán
+            </option>
+
+            <option value="hidden">
+                Đã ẩn
+            </option>
+
+        </select>
+
+        <span class="admin-books-result-count"
+              id="adminBookResultCount">
+
+            @totalBooks sách
+
+        </span>
+
+    </section>
+
+    @if (!Model.Books.Any())
+    {
+        <section class="admin-books-empty">
+
+            <h2>Chưa có sách trong hệ thống</h2>
+
+            <p>
+                Hãy thêm cuốn sách đầu tiên vào kho.
+            </p>
+
+            <a asp-page="Create">
+                Thêm sách mới
+            </a>
+
+        </section>
+    }
+    else
+    {
+        <!-- Bảng sách -->
+        <section class="admin-books-table-card">
+
+            <div class="admin-books-table-wrapper">
+
+                <table class="admin-books-table">
+
+                    <thead>
+                        <tr>
+                            <th>Sách</th>
+                            <th>Danh mục</th>
+                            <th>Giá bán</th>
+                            <th>Tồn kho</th>
+                            <th>Trạng thái</th>
+                            <th>Cập nhật</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="adminBooksTableBody">
+
+                        @foreach (var book in Model.Books)
+                        {
+                            var stock = book.Stock ?? 0;
+
+                            var status =
+                            book.IsActive == true
+                            ? "active"
+                            : "hidden";
+
+                            var isLowStock =
+                            stock <= 5;
+
+                            var searchText =
+                            $"{book.Title} {book.Author} {book.Category?.CategoryName}"
+                            .ToLowerInvariant();
+
+                            <tr data-book-row
+                                data-status="@status"
+                                data-search="@searchText">
+
+                                <!-- Sách -->
+                                <td>
+                                    <div class="admin-book-information">
+
+                                        <a asp-page="Edit"
+                                           asp-route-id="@book.BookId"
+                                           class="admin-book-thumbnail">
+
+                                            <img src="@(string.IsNullOrWhiteSpace(book.ImageUrl)
+                                                                                                         ? "/images/no-image.png"
+                                                                                                         : book.ImageUrl)"
+                                                                                                                         alt="@book.Title" />
+
+                                        </a>
+
+                                        <div class="admin-book-text">
+
+                                            <a asp-page="Edit"
+                                               asp-route-id="@book.BookId"
+                                               class="admin-book-title">
+
+                                                @book.Title
+
+                                            </a>
+
+                                            <span>
+                                                @book.Author
+                                            </span>
+
+                                            <small>
+                                                Mã sách: #@book.BookId
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+                                </td>
+
+                                <!-- Danh mục -->
+                                <td class="admin-book-category">
+                                    @(book.Category?.CategoryName
+                                                                ?? "Chưa phân loại")
+                                                                                </td>
+
+                                <!-- Giá -->
+                                <td>
+                                    <strong class="admin-book-price">
+                                        @book.Price.ToString("N0") đ
+                                    </strong>
+                                </td>
+
+                                <!-- Tồn kho -->
+                                <td>
+                                    <span class="admin-book-stock
+                                                         @(isLowStock
+                                                                                               ? "low"
+                                                                                               : "")">
+
+                                @stock
+
+                                @if (isLowStock)
+                                        {
+                                            <small>Sắp hết</small>
+                                        }
+
+                                    </span>
+                                </td>
+
+                                <!-- Trạng thái -->
+                                <td>
+                                    @if (book.IsActive == true)
+                                    {
+                                        <span class="admin-book-status active">
+                                            <i></i>
+                                            Đang bán
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="admin-book-status hidden">
+                                            <i></i>
+                                            Đã ẩn
+                                        </span>
+                                    }
+                            </td>
+
+                            <!-- Ngày cập nhật -->
+                            <td class="admin-book-updated">
+                                @((book.UpdatedDate
+                                                            ?? book.CreatedDate)?
+                                                            .ToString("dd/MM/yyyy"))
+                        </td>
+
+                                <!-- Thao tác -->
+                                <td>
+                                    <div class="admin-book-actions">
+
+                                        <a asp-page="Edit"
+                                           asp-route-id="@book.BookId"
+                                           class="admin-book-action edit"
+                                           title="Chỉnh sửa sách">
+
+                                            <svg viewBox="0 0 24 24">
+                                                <path d="M12 20h9"></path>
+                                                <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z"></path>
+                                            </svg>
+
+                                            <span>Sửa</span>
+                                        </a>
+
+                                        <form method="post"
+                                              asp-page-handler="ToggleActive"
+                                              asp-route-id="@book.BookId">
+
+                                            <button type="submit"
+                                                    class="admin-book-action toggle"
+                                                    title="@(book.IsActive == true
+                                                                                                    ? "Ẩn sách"
+                                                                                                    : "Hiện sách")">
+
+                                        @if (book.IsActive == true)
+                                                {
+                                                    <svg viewBox="0 0 24 24">
+                                                        <path d="M3 3l18 18"></path>
+                                                        <path d="M10.5 10.7a2 2 0 0 0 2.8 2.8"></path>
+                                                        <path d="M9.9 4.2A10.9 10.9 0 0 1 12 4c5.5 0 9 5 9 5"></path>
+                                                    </svg>
+
+                                                    <span>Ẩn</span>
+                                                }
+                                                else
+                                                {
+                                                    <svg viewBox="0 0 24 24">
+                                                        <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"></path>
+                                                        <circle cx="12"
+                                                                cy="12"
+                                                                r="2.5"></circle>
+                                                    </svg>
+
+                                                    <span>Hiện</span>
+                                                }
+
+                                            </button>
+
+                                        </form>
+
+                                        <form method="post"
+                                              asp-page-handler="Delete"
+                                              asp-route-id="@book.BookId"
+                                              onsubmit="return confirm('Xóa vĩnh viễn sách “@book.Title”? Sách đã có trong đơn hàng sẽ không thể xóa.');">
+
+                                            <button type="submit"
+                                                    class="admin-book-action delete"
+                                                    title="Xóa sách">
+
+                                                <svg viewBox="0 0 24 24">
+                                                    <path d="M4 7h16"></path>
+                                                    <path d="M9 7V4h6v3"></path>
+                                                    <path d="m7 7 1 13h8l1-13"></path>
+                                                    <path d="M10 11v5"></path>
+                                                    <path d="M14 11v5"></path>
+                                                </svg>
+
+                                                <span>Xóa</span>
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="admin-books-filter-empty"
+                 id="adminBooksFilterEmpty"
+                 hidden>
+
+                Không tìm thấy sách phù hợp.
+
+            </div>
+
+        </section>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        const bookSearch =
+            document.getElementById(
+                "adminBookSearch"
+            );
+
+        const statusFilter =
+            document.getElementById(
+                "adminBookStatusFilter"
+            );
+
+        const bookRows =
+            document.querySelectorAll(
+                "[data-book-row]"
+            );
+
+        const emptyResult =
+            document.getElementById(
+                "adminBooksFilterEmpty"
+            );
+
+        const resultCount =
+            document.getElementById(
+                "adminBookResultCount"
+            );
+
+        function filterAdminBooks() {
+            const keyword =
+                bookSearch.value
+                    .trim()
+                    .toLocaleLowerCase("vi-VN");
+
+            const selectedStatus =
+                statusFilter.value;
+
+            let visibleCount = 0;
+
+            bookRows.forEach(function (row) {
+                const searchText =
+                    row.dataset.search || "";
+
+                const rowStatus =
+                    row.dataset.status || "";
+
+                const matchesKeyword =
+                    searchText.includes(keyword);
+
+                const matchesStatus =
+                    selectedStatus === "all" ||
+                    rowStatus === selectedStatus;
+
+                const shouldShow =
+                    matchesKeyword &&
+                    matchesStatus;
+
+                row.hidden = !shouldShow;
+
+                if (shouldShow) {
+                    visibleCount++;
+                }
+            });
+
+            resultCount.textContent =
+                visibleCount + " sách";
+
+            if (emptyResult) {
+                emptyResult.hidden =
+                    visibleCount !== 0;
+            }
         }
-    </tbody>
-</table>
+
+        bookSearch.addEventListener(
+            "input",
+            filterAdminBooks
+        );
+
+        statusFilter.addEventListener(
+            "change",
+            filterAdminBooks
+        );
+    </script>
+}

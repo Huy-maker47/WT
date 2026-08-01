@@ -1,48 +1,529 @@
 ﻿@page
 @model WebTruyen.Pages.AdminOrders.IndexModel
+
 @{
     ViewData["Title"] = "Quản lý đơn hàng";
     Layout = "_AdminLayout";
+
+    var totalOrders = Model.OrderList.Count;
+
+    var waitingOrders = Model.OrderList.Count(
+        order => order.Status == "Chờ xác nhận"
+    );
+
+    var shippingOrders = Model.OrderList.Count(
+        order => order.Status == "Đang giao"
+    );
+
+    var completedOrders = Model.OrderList.Count(
+        order => order.Status == "Hoàn thành"
+    );
+
+    var unpaidOrders = Model.OrderList.Count(
+        order => order.PaymentStatus != "Đã thanh toán"
+    );
 }
 
-<h2>Quản lý đơn hàng</h2>
+<div class="admin-orders-page">
 
-<form method="get" class="mb-3" style="max-width:300px;">
-    <select name="status" class="form-select" onchange="this.form.submit()">
-        <option value="">-- Tất cả trạng thái --</option>
-        <option value="Chờ xác nhận" selected="@(Model.Status == "Chờ xác nhận")">Chờ xác nhận</option>
-        <option value="Đang giao" selected="@(Model.Status == "Đang giao")">Đang giao</option>
-        <option value="Hoàn thành" selected="@(Model.Status == "Hoàn thành")">Hoàn thành</option>
-        <option value="Đã hủy" selected="@(Model.Status == "Đã hủy")">Đã hủy</option>
-    </select>
-</form>
+    <!-- TIÊU ĐỀ -->
+    <header class="admin-orders-header">
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Mã ĐH</th>
-            <th>Khách hàng</th>
-            <th>Ngày đặt</th>
-            <th>Tổng tiền</th>
-            <th>Thanh toán</th>
-            <th>Trạng thái</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var order in Model.OrderList)
+        <div>
+            <span class="admin-orders-eyebrow">
+                QUẢN TRỊ BÁN HÀNG
+            </span>
+
+            <h1>Quản lý đơn hàng</h1>
+
+            <p>
+                Theo dõi thanh toán, xác nhận và quá trình
+                giao hàng của khách hàng.
+            </p>
+        </div>
+
+        <a asp-page="/AdminOrders/Index"
+           class="admin-orders-refresh">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M20 6v5h-5"></path>
+                <path d="M4 18v-5h5"></path>
+                <path d="M6.2 9a7 7 0 0 1 11.3-2.5L20 11"></path>
+                <path d="M4 13l2.5 4.5A7 7 0 0 0 18 15"></path>
+            </svg>
+
+            Làm mới
+        </a>
+
+    </header>
+
+    <!-- THỐNG KÊ -->
+    <section class="admin-orders-statistics">
+
+        <article class="admin-orders-stat-card">
+
+            <span class="admin-orders-stat-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 3h12v18H6z"></path>
+                    <path d="M9 7h6"></path>
+                    <path d="M9 11h6"></path>
+                    <path d="M9 15h4"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Đơn đang hiển thị</span>
+                <strong>@totalOrders</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-orders-stat-card">
+
+            <span class="admin-orders-stat-icon waiting">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12"
+                            cy="12"
+                            r="9"></circle>
+                    <path d="M12 7v5l3 2"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Chờ xác nhận</span>
+                <strong>@waitingOrders</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-orders-stat-card">
+
+            <span class="admin-orders-stat-icon shipping">
+                <svg viewBox="0 0 24 24">
+                    <path d="M3 6h12v10H3z"></path>
+                    <path d="M15 9h3l3 3v4h-6z"></path>
+                    <circle cx="7"
+                            cy="18"
+                            r="2"></circle>
+                    <circle cx="18"
+                            cy="18"
+                            r="2"></circle>
+                </svg>
+            </span>
+
+            <div>
+                <span>Đang giao</span>
+                <strong>@shippingOrders</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-orders-stat-card">
+
+            <span class="admin-orders-stat-icon completed">
+                <svg viewBox="0 0 24 24">
+                    <circle cx="12"
+                            cy="12"
+                            r="9"></circle>
+                    <path d="m8 12 3 3 5-6"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Hoàn thành</span>
+                <strong>@completedOrders</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-orders-stat-card">
+
+            <span class="admin-orders-stat-icon payment">
+                <svg viewBox="0 0 24 24">
+                    <path d="M4 7h16v10H4z"></path>
+                    <path d="M8 12h.01"></path>
+                    <path d="M12 12h4"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Chưa thanh toán</span>
+                <strong>@unpaidOrders</strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    <!-- TÌM KIẾM VÀ LỌC -->
+    <section class="admin-orders-toolbar">
+
+        <label class="admin-orders-search">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="11"
+                        cy="11"
+                        r="7"></circle>
+                <path d="m20 20-4-4"></path>
+            </svg>
+
+            <input type="search"
+                   id="adminOrderSearch"
+                   placeholder="Tìm mã đơn, tên hoặc số điện thoại..."
+                   autocomplete="off" />
+
+        </label>
+
+        <form method="get"
+              class="admin-orders-status-form">
+
+            <select name="status"
+                    class="admin-orders-status-filter"
+                    onchange="this.form.submit()">
+
+                @if (string.IsNullOrWhiteSpace(Model.Status))
+                {
+                    <option value="" selected>
+                        Tất cả trạng thái
+                    </option>
+                }
+                else
+                {
+                    <option value="">
+                        Tất cả trạng thái
+                    </option>
+                }
+
+                @if (Model.Status == "Chờ xác nhận")
+                {
+                    <option value="Chờ xác nhận" selected>
+                        Chờ xác nhận
+                    </option>
+                }
+                else
+                {
+                    <option value="Chờ xác nhận">
+                        Chờ xác nhận
+                    </option>
+                }
+
+                @if (Model.Status == "Đang giao")
+                {
+                    <option value="Đang giao" selected>
+                        Đang giao
+                    </option>
+                }
+                else
+                {
+                    <option value="Đang giao">
+                        Đang giao
+                    </option>
+                }
+
+                @if (Model.Status == "Hoàn thành")
+                {
+                    <option value="Hoàn thành" selected>
+                        Hoàn thành
+                    </option>
+                }
+                else
+                {
+                    <option value="Hoàn thành">
+                        Hoàn thành
+                    </option>
+                }
+
+                @if (Model.Status == "Đã hủy")
+                {
+                    <option value="Đã hủy" selected>
+                        Đã hủy
+                    </option>
+                }
+                else
+                {
+                    <option value="Đã hủy">
+                        Đã hủy
+                    </option>
+                }
+
+            </select>
+
+        </form>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Status))
         {
-            <tr>
-                <td>#@order.OrderId</td>
-                <td>@order.ReceiverName</td>
-                <td>@order.OrderDate?.ToString("dd/MM/yyyy HH:mm")</td>
-                <td>@order.TotalAmount.ToString("N0") đ</td>
-                <td>@order.PaymentStatus</td>
-                <td><span class="badge bg-info text-dark">@order.Status</span></td>
-                <td>
-                    <a asp-page="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-primary">Chi tiết</a>
-                </td>
-            </tr>
+            <a asp-page="/AdminOrders/Index"
+               class="admin-orders-clear-filter">
+                Xóa lọc
+            </a>
         }
-    </tbody>
-</table>
+
+        <span class="admin-orders-result-count"
+              id="adminOrderResultCount">
+            @totalOrders đơn
+        </span>
+
+    </section>
+
+    @if (!Model.OrderList.Any())
+    {
+        <section class="admin-orders-empty">
+
+            <span>
+                <svg viewBox="0 0 24 24">
+                    <path d="M6 3h12v18H6z"></path>
+                    <path d="M9 7h6"></path>
+                    <path d="M9 11h6"></path>
+                    <path d="M9 15h4"></path>
+                </svg>
+            </span>
+
+            <h2>Không có đơn hàng</h2>
+
+            <p>
+                Chưa có đơn hàng phù hợp với trạng thái đã chọn.
+            </p>
+
+            <a asp-page="/AdminOrders/Index">
+                Xem tất cả đơn
+            </a>
+
+        </section>
+    }
+    else
+    {
+        <!-- DANH SÁCH ĐƠN -->
+        <section class="admin-orders-list"
+                 id="adminOrdersList">
+
+            @foreach (var order in Model.OrderList)
+            {
+                var orderStatus = order.Status ?? "Chưa cập nhật";
+                var paymentStatus = order.PaymentStatus ?? "Chưa cập nhật";
+
+                var statusClass = orderStatus switch
+                {
+                    "Chờ xác nhận" => "waiting",
+                    "Đang giao" => "shipping",
+                    "Hoàn thành" => "completed",
+                    "Đã hủy" => "cancelled",
+                    _ => "default"
+                };
+
+                var paymentClass = paymentStatus switch
+                {
+                    "Đã thanh toán" => "paid",
+
+                    "Chờ thanh toán"
+                    => "pending",
+
+                    "Chờ xác nhận thanh toán"
+                    => "pending",
+
+                    "Chưa nhận được tiền"
+                    => "failed",
+
+                    _ => "unpaid"
+                };
+
+                var searchText =
+                $"{order.OrderId} {order.ReceiverName} {order.ReceiverPhone}"
+                .ToLowerInvariant();
+
+                <article class="admin-order-card"
+                         data-order-card
+                         data-search="@searchText">
+
+                    <!-- ĐẦU CARD -->
+                    <header class="admin-order-card-header">
+
+                        <div class="admin-order-code">
+
+                            <span class="admin-order-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M6 3h12v18H6z"></path>
+                                    <path d="M9 7h6"></path>
+                                    <path d="M9 11h6"></path>
+                                    <path d="M9 15h4"></path>
+                                </svg>
+                            </span>
+
+                            <div>
+                                <strong>
+                                    Đơn hàng #@order.OrderId
+                                </strong>
+
+                                <time>
+                                    @order.OrderDate?.ToString(
+                                    "HH:mm, dd/MM/yyyy"
+                                                        )
+                        </time>
+                    </div>
+
+                </div>
+
+                <span class="admin-order-status @statusClass">
+                    <i></i>
+                    @orderStatus
+                </span>
+
+            </header>
+
+            <!-- THÂN CARD -->
+            <div class="admin-order-card-body">
+
+                <!-- Khách hàng -->
+                <div class="admin-order-customer">
+
+                    <span class="admin-order-customer-avatar">
+                        @(string.IsNullOrWhiteSpace(order.ReceiverName)
+                                                ? "K"
+                                                : order.ReceiverName.Trim()
+                                                .Substring(0, 1)
+                                                .ToUpper())
+                                                       </span>
+
+                    <div>
+                        <span>Khách hàng</span>
+
+                        <strong>
+                            @order.ReceiverName
+                        </strong>
+
+                        <small>
+                            @order.ReceiverPhone
+                        </small>
+                    </div>
+
+                </div>
+
+                <!-- Tổng tiền -->
+                <div class="admin-order-information">
+
+                    <span>Tổng thanh toán</span>
+
+                    <strong class="admin-order-total">
+                        @order.TotalAmount.ToString("N0") đ
+                    </strong>
+
+                </div>
+
+                <!-- Phương thức -->
+                <div class="admin-order-information">
+
+                    <span>Phương thức</span>
+
+                    <strong>
+                        @(string.IsNullOrWhiteSpace(order.PaymentMethod)
+                                                ? "Chưa cập nhật"
+                                                : order.PaymentMethod)
+                    </strong>
+
+                        </div>
+
+                        <!-- Thanh toán -->
+                        <div class="admin-order-information">
+
+                            <span>Thanh toán</span>
+
+                            <strong class="admin-order-payment @paymentClass">
+                                @paymentStatus
+                            </strong>
+
+                        </div>
+
+                        <!-- Chi tiết -->
+                        <a asp-page="Details"
+                           asp-route-id="@order.OrderId"
+                           class="admin-order-detail-button">
+
+                            Xem chi tiết
+
+                            <svg viewBox="0 0 24 24">
+                                <path d="M5 12h14"></path>
+                                <path d="m13 6 6 6-6 6"></path>
+                            </svg>
+
+                        </a>
+
+                    </div>
+
+                </article>
+                }
+
+        </section>
+
+        <div class="admin-orders-search-empty"
+             id="adminOrdersSearchEmpty"
+             hidden>
+
+            Không tìm thấy đơn hàng phù hợp.
+
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        const orderSearch =
+            document.getElementById(
+                "adminOrderSearch"
+            );
+
+        const orderCards =
+            document.querySelectorAll(
+                "[data-order-card]"
+            );
+
+        const resultCount =
+            document.getElementById(
+                "adminOrderResultCount"
+            );
+
+        const emptyResult =
+            document.getElementById(
+                "adminOrdersSearchEmpty"
+            );
+
+        if (orderSearch) {
+            orderSearch.addEventListener(
+                "input",
+                function () {
+                    const keyword =
+                        orderSearch.value
+                            .trim()
+                            .toLocaleLowerCase("vi-VN");
+
+                    let visibleCount = 0;
+
+                    orderCards.forEach(
+                        function (card) {
+                            const searchText =
+                                card.dataset.search || "";
+
+                            const shouldShow =
+                                searchText.includes(keyword);
+
+                            card.hidden = !shouldShow;
+
+                            if (shouldShow) {
+                                visibleCount++;
+                            }
+                        }
+                    );
+
+                    resultCount.textContent =
+                        visibleCount + " đơn";
+
+                    if (emptyResult) {
+                        emptyResult.hidden =
+                            visibleCount !== 0;
+                    }
+                }
+            );
+        }
+    </script>
+}

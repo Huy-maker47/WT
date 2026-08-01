@@ -1,49 +1,491 @@
 ﻿@page "{id:int}"
 @model WebTruyen.Pages.AdminBooks.EditModel
+
 @{
     ViewData["Title"] = "Sửa sách";
     Layout = "_AdminLayout";
+
+    var currentImage = string.IsNullOrWhiteSpace(Model.BookInput.ImageUrl)
+        ? "/images/no-image.png"
+        : Model.BookInput.ImageUrl;
 }
 
-<h2>Sửa sách</h2>
+<div class="admin-book-create-page">
 
-<form method="post" enctype="multipart/form-data">
-    <input type="hidden" asp-for="BookInput.BookId" />
-    <div asp-validation-summary="All" class="text-danger"></div>
-    <div class="mb-3">
-        <label>Tên sách</label>
-        <input asp-for="BookInput.Title" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Tác giả</label>
-        <input asp-for="BookInput.Author" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Danh mục</label>
-        <select asp-for="BookInput.CategoryId" class="form-select">
-            @foreach (var cate in Model.Categories)
-            {
-                <option value="@cate.CategoryId">@cate.CategoryName</option>
+    <header class="admin-book-create-header">
+
+        <a asp-page="Index"
+           class="admin-book-create-back">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M19 12H5"></path>
+                <path d="m12 19-7-7 7-7"></path>
+            </svg>
+
+            Quay lại quản lý sách
+        </a>
+
+        <span class="admin-book-create-eyebrow">
+            QUẢN TRỊ KHO SÁCH
+        </span>
+
+        <h1>Sửa thông tin sách</h1>
+
+        <p>
+            Cập nhật nội dung, giá bán, tồn kho và ảnh bìa sách.
+        </p>
+
+    </header>
+
+    <form method="post"
+          enctype="multipart/form-data"
+          class="admin-book-create-form">
+
+        <input type="hidden"
+               asp-for="BookInput.BookId" />
+
+        <input type="hidden"
+               asp-for="BookInput.ImageUrl" />
+
+        <div asp-validation-summary="ModelOnly"
+             class="admin-book-create-validation">
+        </div>
+
+        <div class="admin-book-create-layout">
+
+            <!-- Cột thông tin -->
+            <div class="admin-book-create-main">
+
+                <section class="admin-book-create-card">
+
+                    <header class="admin-book-create-card-header">
+
+                        <span class="admin-book-create-card-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path d="M3 5h7a3 3 0 0 1 3 3v12a3 3 0 0 0-3-3H3Z"></path>
+                                <path d="M21 5h-7a3 3 0 0 0-3 3v12a3 3 0 0 1 3-3h7Z"></path>
+                            </svg>
+                        </span>
+
+                        <div>
+                            <h2>Thông tin sách</h2>
+                            <p>Mã sách #@Model.BookInput.BookId</p>
+                        </div>
+
+                    </header>
+
+                    <div class="admin-book-create-grid">
+
+                        <!-- Tên sách -->
+                        <div class="admin-book-create-field full">
+
+                            <label asp-for="BookInput.Title">
+                                Tên sách
+                                <span>*</span>
+                            </label>
+
+                            <input asp-for="BookInput.Title"
+                                   class="admin-book-create-input"
+                                   placeholder="Nhập tên sách"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="BookInput.Title"
+                                  class="admin-book-create-error">
+                            </span>
+
+                        </div>
+
+                        <!-- Tác giả -->
+                        <div class="admin-book-create-field">
+
+                            <label asp-for="BookInput.Author">
+                                Tác giả
+                                <span>*</span>
+                            </label>
+
+                            <input asp-for="BookInput.Author"
+                                   class="admin-book-create-input"
+                                   placeholder="Nhập tên tác giả"
+                                   autocomplete="off" />
+
+                            <span asp-validation-for="BookInput.Author"
+                                  class="admin-book-create-error">
+                            </span>
+
+                        </div>
+
+                        <!-- Danh mục -->
+                        <div class="admin-book-create-field">
+
+                            <label asp-for="BookInput.CategoryId">
+                                Danh mục
+                                <span>*</span>
+                            </label>
+
+                            <select asp-for="BookInput.CategoryId"
+                                    class="admin-book-create-input">
+
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category.CategoryId">
+                                        @category.CategoryName
+                                    </option>
+                                }
+
+                            </select>
+
+                            <span asp-validation-for="BookInput.CategoryId"
+                                  class="admin-book-create-error">
+                            </span>
+
+                        </div>
+
+                        <!-- Mô tả -->
+                        <div class="admin-book-create-field full">
+
+                            <label asp-for="BookInput.Description">
+                                Mô tả sách
+                            </label>
+
+                            <textarea asp-for="BookInput.Description"
+                                      rows="8"
+                                      class="admin-book-create-input admin-book-create-description"
+                                      placeholder="Nhập nội dung giới thiệu sách..."></textarea>
+
+                            <div class="admin-book-create-help">
+                                Nội dung này sẽ hiển thị trong trang chi tiết sách.
+                            </div>
+
+                            <span asp-validation-for="BookInput.Description"
+                                  class="admin-book-create-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Giá và tồn kho -->
+                <section class="admin-book-create-card">
+
+                    <header class="admin-book-create-card-header">
+
+                        <span class="admin-book-create-card-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path d="M4 7h16v10H4z"></path>
+                                <path d="M8 12h.01"></path>
+                                <path d="M12 12h4"></path>
+                            </svg>
+                        </span>
+
+                        <div>
+                            <h2>Giá bán và tồn kho</h2>
+                            <p>Cập nhật giá và số lượng còn lại</p>
+                        </div>
+
+                    </header>
+
+                    <div class="admin-book-create-grid">
+
+                        <!-- Giá -->
+                        <div class="admin-book-create-field">
+
+                            <label asp-for="BookInput.Price">
+                                Giá bán
+                                <span>*</span>
+                            </label>
+
+                            <div class="admin-book-create-money">
+
+                                <input asp-for="BookInput.Price"
+                                       type="number"
+                                       min="0"
+                                       step="1"
+                                       inputmode="numeric"
+                                       class="admin-book-create-input" />
+
+                                <span>đ</span>
+
+                            </div>
+
+                            <div class="admin-book-create-help">
+                                Có thể nhập giá như 23750 hoặc 47500.
+                            </div>
+
+                            <span asp-validation-for="BookInput.Price"
+                                  class="admin-book-create-error">
+                            </span>
+
+                        </div>
+
+                        <!-- Tồn kho -->
+                        <div class="admin-book-create-field">
+
+                            <label asp-for="BookInput.Stock">
+                                Số lượng tồn kho
+                                <span>*</span>
+                            </label>
+
+                            <div class="admin-book-create-stock">
+
+                                <input asp-for="BookInput.Stock"
+                                       type="number"
+                                       min="0"
+                                       step="1"
+                                       inputmode="numeric"
+                                       class="admin-book-create-input" />
+
+                                <span>cuốn</span>
+
+                            </div>
+
+                            <div class="admin-book-create-help">
+                                Nhập 0 nếu sách đang tạm hết hàng.
+                            </div>
+
+                            <span asp-validation-for="BookInput.Stock"
+                                  class="admin-book-create-error">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- Cột ảnh -->
+            <aside class="admin-book-create-sidebar">
+
+                <section class="admin-book-create-card admin-book-image-card">
+
+                    <header class="admin-book-create-card-header">
+
+                        <span class="admin-book-create-card-icon">
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <rect x="3"
+                                      y="4"
+                                      width="18"
+                                      height="16"
+                                      rx="2"></rect>
+                                <circle cx="9"
+                                        cy="10"
+                                        r="2"></circle>
+                                <path d="m21 15-5-5L5 20"></path>
+                            </svg>
+                        </span>
+
+                        <div>
+                            <h2>Ảnh bìa sách</h2>
+                            <p>Ảnh hiện đang sử dụng</p>
+                        </div>
+
+                    </header>
+
+                    <div class="admin-book-edit-image-status">
+                        <span></span>
+                        Ảnh hiện tại
+                    </div>
+
+                    <div class="admin-book-image-preview">
+
+                        <img id="bookImagePreview"
+                             src="@currentImage"
+                             alt="Ảnh bìa @Model.BookInput.Title" />
+
+                    </div>
+
+                    <input asp-for="ImageFile"
+                           type="file"
+                           id="bookImageInput"
+                           accept=".jpg,.jpeg,.png,.webp"
+                           hidden />
+
+                    <label for="bookImageInput"
+                           class="admin-book-image-select">
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <path d="M12 16V4"></path>
+                            <path d="m7 9 5-5 5 5"></path>
+                            <path d="M5 20h14"></path>
+                        </svg>
+
+                        Chọn ảnh bìa mới
+
+                    </label>
+
+                    <div id="bookImageFileName"
+                         class="admin-book-image-file-name">
+
+                        Bỏ trống để giữ nguyên ảnh hiện tại
+
+                    </div>
+
+                    <span asp-validation-for="ImageFile"
+                          class="admin-book-create-error">
+                    </span>
+
+                    <div class="admin-book-image-note">
+
+                        <strong>Lưu ý khi thay ảnh</strong>
+
+                        <ul>
+                            <li>Chỉ thay ảnh khi thật sự cần thiết.</li>
+                            <li>Nên sử dụng ảnh dọc, rõ nét.</li>
+                            <li>Hỗ trợ JPG, PNG và WebP.</li>
+                        </ul>
+
+                    </div>
+
+                </section>
+
+                <!-- Thông tin cập nhật -->
+                <section class="admin-book-edit-information">
+
+                    <div>
+                        <span>Ngày tạo</span>
+
+                        <strong>
+                            @(Model.BookInput.CreatedDate?
+                                                        .ToString("dd/MM/yyyy HH:mm")
+                                                        ?? "Chưa có dữ liệu")
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Cập nhật gần nhất</span>
+
+                        <strong>
+                            @(Model.BookInput.UpdatedDate?
+                                                        .ToString("dd/MM/yyyy HH:mm")
+                                                        ?? "Chưa từng cập nhật")
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Trạng thái</span>
+
+                        @if (Model.BookInput.IsActive == true)
+                        {
+                            <strong class="active">
+                                Đang bán
+                            </strong>
+                        }
+                        else
+                        {
+                            <strong class="hidden">
+                                Đã ẩn
+                            </strong>
+                        }
+
+                    </div>
+
+                </section>
+
+            </aside>
+
+        </div>
+
+        <!-- Nút cuối -->
+        <footer class="admin-book-create-actions">
+
+            <a asp-page="Index"
+               class="admin-book-create-cancel">
+                Hủy thay đổi
+            </a>
+
+            <button type="submit"
+                    class="admin-book-create-submit">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M5 4h12l2 2v14H5Z"></path>
+                    <path d="M8 4v6h8V4"></path>
+                    <path d="M8 20v-6h8v6"></path>
+                </svg>
+
+                Lưu thay đổi
+            </button>
+
+        </footer>
+
+    </form>
+
+</div>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const imageInput =
+            document.getElementById("bookImageInput");
+
+        const imagePreview =
+            document.getElementById("bookImagePreview");
+
+        const imageFileName =
+            document.getElementById("bookImageFileName");
+
+        const currentImageUrl =
+            @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                        currentImage
+                )
+                );
+
+    imageInput.addEventListener(
+        "change",
+        function () {
+            const file =
+                imageInput.files[0];
+
+            if (!file) {
+                imagePreview.src =
+                    currentImageUrl;
+
+                imageFileName.textContent =
+                    "Bỏ trống để giữ nguyên ảnh hiện tại";
+
+                return;
             }
-        </select>
-    </div>
-    <div class="mb-3">
-        <label>Mô tả</label>
-        <textarea asp-for="BookInput.Description" class="form-control"></textarea>
-    </div><div class="mb-3">
-    </div><div class="mb-3">
-        <label>Tồn kho</label>
-        <input asp-for="BookInput.Stock" type="number" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Ảnh hiện tại</label><br />
-        @if (!string.IsNullOrEmpty(Model.BookInput.ImageUrl))
-        {
-            <img src="@Model.BookInput.ImageUrl" style="max-width:150px;" class="mb-2" />
+
+            const allowedTypes = [
+                "image/jpeg",
+                "image/png",
+                "image/webp"
+            ];
+
+            if (!allowedTypes.includes(file.type)) {
+                alert(
+                    "Chỉ được chọn ảnh JPG, PNG hoặc WebP."
+                );
+
+                imageInput.value = "";
+                imagePreview.src = currentImageUrl;
+
+                return;
+            }
+
+            const previewUrl =
+                URL.createObjectURL(file);
+
+            imagePreview.src = previewUrl;
+
+            imageFileName.textContent =
+                "Ảnh mới: " + file.name;
+
+            imagePreview.onload = function () {
+                URL.revokeObjectURL(previewUrl);
+            };
         }
-        <br />
-        <label>Chọn ảnh mới (bỏ trống nếu giữ ảnh cũ)</label>
-        <input type="file" name="ImageFile" class="form-control" accept="image/*" />
-    </div>
-    <button type="submit" class="btn btn-success">Lưu</button>
-</form>
+    );
+</script>
+}

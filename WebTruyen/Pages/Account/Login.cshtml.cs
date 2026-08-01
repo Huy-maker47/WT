@@ -37,13 +37,28 @@ namespace WebTruyen.Pages.Account
             }
 
             var user = _context.Users
-                .FirstOrDefault(u => u.Username == Username
-                                   && u.PasswordHash == Password
-                                   && u.IsActive == true);
+    .FirstOrDefault(u =>
+        u.Username == Username &&
+        u.PasswordHash == Password
+    );
 
             if (user == null)
             {
-                ModelState.AddModelError("", "Sai tài khoản hoặc mật khẩu");
+                ModelState.AddModelError(
+                    "",
+                    "Sai tài khoản hoặc mật khẩu."
+                );
+
+                return Page();
+            }
+
+            if (user.IsActive != true)
+            {
+                ModelState.AddModelError(
+                    "",
+                    "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ Admin để được hỗ trợ."
+                );
+
                 return Page();
             }
 
