@@ -1,53 +1,324 @@
 ﻿@page
 @model WebTruyen.Pages.Cart.IndexModel
+
 @{
     ViewData["Title"] = "Giỏ hàng";
+
+    var totalQuantity = Model.CartData.CartItems
+        .Sum(item => item.Quantity);
+
+    var totalPrice = Model.CartData.CartItems
+        .Sum(item => item.Quantity * item.Book.Price);
 }
 
-<h2>Giỏ hàng của bạn</h2>
+<div class="shopping-cart-page">
 
-@if (!Model.CartData.CartItems.Any())
-{
-    <p>Giỏ hàng trống.</p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Sách</th>
-                <th>Đơn giá</th>
-                <th>Số lượng</th>
-                <th>Thành tiền</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.CartData.CartItems)
-            {
-                <tr>
-                    <td>@item.Book.Title</td>
-                    <td>@item.Book.Price.ToString("N0") đ</td>
-                    <td style="width:120px;">
-                        <form method="post" asp-page-handler="UpdateQuantity" class="d-flex">
-                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
-                            <input type="number" name="quantity" value="@item.Quantity" min="1"
-                                   class="form-control form-control-sm" onchange="this.form.submit()" />
-                        </form>
-                    </td>
-                    <td>@((item.Quantity * item.Book.Price).ToString("N0")) đ</td>
-                    <td>
-                        <form method="post" asp-page-handler="Remove">
-                            <input type="hidden" name="cartItemId" value="@item.CartItemId" />
-                            <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="shopping-cart-header">
+        <div>
+            <span class="shopping-cart-label">METruyen</span>
 
-    <h4>Tổng cộng: @Model.CartData.CartItems.Sum(i => i.Quantity * i.Book.Price).ToString("N0") đ</h4>
+            <h1>Giỏ hàng của bạn</h1>
 
-    <a asp-page="/Cart/Checkout" class="btn btn-primary">Tiến hành đặt hàng</a>
+            <p>
+                Kiểm tra lại sản phẩm và số lượng trước khi đặt hàng.
+            </p>
+        </div>
+
+        <a asp-page="/Books/Index"
+           class="shopping-cart-continue">
+            ← Tiếp tục mua sách
+        </a>
+    </div>
+
+    @if (Model.CartData.CartItems.Count == 0)
+    {
+        <section class="shopping-cart-empty">
+
+            <div class="shopping-cart-empty-icon">
+                🛒
+            </div>
+
+            <h2>Giỏ hàng đang trống</h2>
+
+            <p>
+                Bạn chưa thêm cuốn sách nào vào giỏ hàng.
+            </p>
+
+            <a asp-page="/Books/Index"
+               class="btn shopping-cart-main-button">
+                Khám phá kho sách
+            </a>
+
+        </section>
+    }
+    else
+    {
+        <div class="shopping-cart-grid">
+
+            <!-- Danh sách sản phẩm -->
+            <section class="shopping-cart-products">
+
+                <div class="shopping-cart-products-heading">
+                    <h2>Sản phẩm</h2>
+
+                    <span>
+                        @totalQuantity sản phẩm
+                    </span>
+                </div>
+
+                @foreach (var item in Model.CartData.CartItems)
+                {
+                    var lineTotal =
+                    item.Quantity * item.Book.Price;
+
+                    var maxStock =
+                    Math.Max(item.Book.Stock ?? 1, 1);
+
+                    <article class="shopping-cart-item">
+
+                        <!-- Ảnh -->
+                        <a asp-page="/Books/Details"
+                           asp-route-id="@item.Book.BookId"
+                           class="shopping-cart-item-image">
+
+                            <img src="@(string.IsNullOrWhiteSpace(item.Book.ImageUrl)
+                                                                         ? "/images/no-image.png"
+                                                                         : item.Book.ImageUrl)"
+                         alt="@item.Book.Title" />
+                </a>
+
+                        <!-- Thông tin -->
+                        <div class="shopping-cart-item-info">
+
+                            <a asp-page="/Books/Details"
+                               asp-route-id="@item.Book.BookId"
+                               class="shopping-cart-item-title">
+
+                                @item.Book.Title
+                            </a>
+
+                            <p class="shopping-cart-item-author">
+                                Tác giả: @item.Book.Author
+                            </p>
+
+                            <div class="shopping-cart-item-stock">
+                                Còn @maxStock cuốn
+                            </div>
+
+                            <div class="shopping-cart-mobile-price">
+                                @item.Book.Price.ToString("N0") đ
+                            </div>
+
+                        </div>
+
+                        <!-- Đơn giá -->
+                        <div class="shopping-cart-unit-price">
+                            <span>Đơn giá</span>
+
+                            <strong>
+                                @item.Book.Price.ToString("N0") đ
+                            </strong>
+                        </div>
+
+                        <!-- Số lượng -->
+                        <div class="shopping-cart-quantity">
+
+                            <span class="shopping-cart-column-label">
+                                Số lượng
+                            </span>
+
+                            <form method="post"
+                                  asp-page-handler="UpdateQuantity"
+                                  class="shopping-cart-quantity-form">
+
+                                <input type="hidden"
+                                       name="cartItemId"
+                                       value="@item.CartItemId" />
+
+                                <div class="shopping-cart-quantity-control">
+
+                                    <button type="button"
+                                            class="shopping-cart-quantity-button"
+                                            data-action="decrease"
+                                            aria-label="Giảm số lượng">
+                                        −
+                                    </button>
+
+                                    <input type="number"
+                                           name="quantity"
+                                           value="@item.Quantity"
+                                           min="1"
+                                           max="@maxStock"
+                                           class="shopping-cart-quantity-input"
+                                           aria-label="Số lượng" />
+
+                                    <button type="button"
+                                            class="shopping-cart-quantity-button"
+                                            data-action="increase"
+                                            aria-label="Tăng số lượng">
+                                        +
+                                    </button>
+
+                                </div>
+                            </form>
+
+                        </div>
+
+                        <!-- Thành tiền -->
+                        <div class="shopping-cart-line-total">
+
+                            <span>Thành tiền</span>
+
+                            <strong>
+                                @lineTotal.ToString("N0") đ
+                            </strong>
+
+                            <form method="post"
+                                  asp-page-handler="Remove"
+                                  onsubmit="return confirm('Xóa cuốn sách này khỏi giỏ hàng?');">
+
+                                <input type="hidden"
+                                       name="cartItemId"
+                                       value="@item.CartItemId" />
+
+                                <button type="submit"
+                                        class="shopping-cart-remove">
+                                    Xóa sản phẩm
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </article>
+                        }
+
+            </section>
+
+            <!-- Tóm tắt đơn hàng -->
+            <aside class="shopping-cart-summary">
+
+                <h2>Tóm tắt đơn hàng</h2>
+
+                <div class="shopping-cart-summary-row">
+                    <span>Số lượng sản phẩm</span>
+                    <strong>@totalQuantity</strong>
+                </div>
+
+                <div class="shopping-cart-summary-row">
+                    <span>Tạm tính</span>
+
+                    <strong>
+                        @totalPrice.ToString("N0") đ
+                    </strong>
+                </div>
+
+                <div class="shopping-cart-summary-row">
+                    <span>Phí vận chuyển</span>
+                    <strong>Miễn phí</strong>
+                </div>
+
+                <div class="shopping-cart-summary-divider"></div>
+
+                <div class="shopping-cart-summary-total">
+                    <span>Tổng cộng</span>
+
+                    <strong>
+                        @totalPrice.ToString("N0") đ
+                    </strong>
+                </div>
+
+                <a asp-page="/Cart/Checkout"
+                   class="btn shopping-cart-checkout-button">
+                    Tiến hành đặt hàng
+                </a>
+
+                <div class="shopping-cart-assurance">
+
+                    <div>
+                        <span>✓</span>
+                        Thông tin được bảo mật
+                    </div>
+
+                    <div>
+                        <span>✓</span>
+                        Kiểm tra đơn trước khi xác nhận
+                    </div>
+
+                    <div>
+                        <span>✓</span>
+                        Theo dõi trạng thái đơn hàng
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        document
+            .querySelectorAll(".shopping-cart-quantity-control")
+            .forEach(function (control) {
+
+                const input =
+                    control.querySelector(".shopping-cart-quantity-input");
+
+                const form =
+                    control.closest("form");
+
+                control
+                    .querySelectorAll(".shopping-cart-quantity-button")
+                    .forEach(function (button) {
+
+                        button.addEventListener("click", function () {
+
+                            const minimum =
+                                parseInt(input.min || "1");
+
+                            const maximum =
+                                parseInt(input.max || "999999");
+
+                            let value =
+                                parseInt(input.value || "1");
+
+                            if (button.dataset.action === "increase") {
+                                value = Math.min(value + 1, maximum);
+                            }
+                            else {
+                                value = Math.max(value - 1, minimum);
+                            }
+
+                            if (value !== parseInt(input.value)) {
+                                input.value = value;
+                                form.requestSubmit();
+                            }
+                        });
+                    });
+
+                input.addEventListener("change", function () {
+
+                    const minimum =
+                        parseInt(input.min || "1");
+
+                    const maximum =
+                        parseInt(input.max || "999999");
+
+                    let value =
+                        parseInt(input.value || "1");
+
+                    value = Math.max(
+                        minimum,
+                        Math.min(value, maximum)
+                    );
+
+                    input.value = value;
+                    form.requestSubmit();
+                });
+            });
+    </script>
 }

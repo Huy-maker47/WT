@@ -1,58 +1,111 @@
 ﻿@model List<WebTruyen.ViewComponents.BestSellingBooksViewComponent.BestSellingBookItem>
 
-<section class="card h-100 border-0 shadow-sm">
-    <div class="card-header bg-dark text-white">
-        <h4 class="mb-0">Truyện bán chạy</h4>
-    </div>
+<section class="home-spotlight-panel home-spotlight-best">
 
-    <div class="card-body">
+    <header class="home-spotlight-header">
+
+        <span class="home-spotlight-icon">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M8 21h8"></path>
+                <path d="M12 17v4"></path>
+                <path d="M7 4h10v5a5 5 0 0 1-10 0Z"></path>
+                <path d="M7 6H4v2a4 4 0 0 0 4 4"></path>
+                <path d="M17 6h3v2a4 4 0 0 1-4 4"></path>
+            </svg>
+
+        </span>
+
+        <div>
+            <span>ĐƯỢC QUAN TÂM</span>
+            <h2>Sách bán chạy</h2>
+        </div>
+
+    </header>
+
+    <div class="home-spotlight-body">
+
         @if (Model == null || Model.Count == 0)
         {
-            <div class="alert alert-info mb-0">
-                Chưa có dữ liệu bán hàng.
+            <div class="home-spotlight-empty">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M6 3h12v18H6z"></path>
+                    <path d="M9 7h6"></path>
+                    <path d="M9 11h6"></path>
+                    <path d="M9 15h4"></path>
+                </svg>
+
+                <strong>Chưa có dữ liệu bán hàng</strong>
+
+                <span>
+                    Danh sách sẽ xuất hiện khi có đơn hàng.
+                </span>
+
             </div>
         }
         else
         {
-            @foreach (var item in Model)
-            {
-                <div class="d-flex gap-3 py-3 border-bottom">
-                    <a asp-page="/Books/Details"
-                       asp-route-id="@item.Book.BookId">
+            var rank = 0;
 
-                        <img src="@(string.IsNullOrWhiteSpace(item.Book.ImageUrl)
-                                                                 ? "/images/no-image.png"
-                                                                 : item.Book.ImageUrl)"
-                     alt="@item.Book.Title"
-                     class="rounded border"
-                     style="width:75px;
-                                    height:105px;
-                                    object-fit:cover;" />
-            </a>
+            <div class="home-spotlight-list">
 
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1">
-                            <a asp-page="/Books/Details"
-                               asp-route-id="@item.Book.BookId"
-                               class="text-dark text-decoration-none">
-                                @item.Book.Title
-                            </a>
-                        </h6>
+                @foreach (var item in Model)
+                {
+                    rank++;
 
-                        <div class="small text-muted mb-1">
-                            @item.Book.Author
-                        </div>
+                    <article class="home-spotlight-item">
 
-                        <div class="text-danger fw-bold">
-                            @item.Book.Price.ToString("N0") đ
-                        </div>
-
-                        <span class="badge bg-success mt-1">
-                            Đã bán @item.TotalSold
+                        <span class="home-spotlight-rank">
+                            @rank
                         </span>
-                    </div>
-                </div>
-                }
+
+                        <a asp-page="/Books/Details"
+                           asp-route-id="@item.Book.BookId"
+                           class="home-spotlight-cover">
+
+                            <img src="@(string.IsNullOrWhiteSpace(item.Book.ImageUrl)
+                                                                         ? "/images/no-image.png"
+                                                                         : item.Book.ImageUrl)"
+                         alt="@item.Book.Title" />
+
+                        </a>
+
+                        <div class="home-spotlight-information">
+
+                            <h3>
+                                <a asp-page="/Books/Details"
+                                   asp-route-id="@item.Book.BookId">
+
+                                    @item.Book.Title
+
+                                </a>
+                            </h3>
+
+                            <p>@item.Book.Author</p>
+
+                            <div class="home-spotlight-meta">
+
+                                <strong>
+                                    @item.Book.Price.ToString("N0") đ
+                                </strong>
+
+                                <span>
+                                    Đã bán @item.TotalSold
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+                        }
+
+            </div>
         }
+
     </div>
+
 </section>

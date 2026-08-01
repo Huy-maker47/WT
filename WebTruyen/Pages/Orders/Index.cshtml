@@ -1,54 +1,407 @@
 ﻿@page
 @model WebTruyen.Pages.Orders.IndexModel
+
 @{
     ViewData["Title"] = "Đơn hàng của tôi";
+
+    var totalOrders = Model.MyOrders.Count;
+
+    var waitingOrders = Model.MyOrders.Count(order =>
+        order.Status == "Chờ xác nhận");
+
+    var shippingOrders = Model.MyOrders.Count(order =>
+        order.Status == "Đang giao");
+
+    var completedOrders = Model.MyOrders.Count(order =>
+        order.Status == "Hoàn thành");
 }
 
-<h2>Đơn hàng của tôi</h2>
+<div class="my-orders-page">
 
-@if (!Model.MyOrders.Any())
-{
-    <p>Bạn chưa có đơn hàng nào.</p>
-}
-else
-{
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Mã ĐH</th>
-                <th>Ngày đặt</th>
-                <th>Tổng tiền</th>
-                <th>Thanh toán</th>
-                <th>Trạng thái</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
+    <!-- Tiêu đề -->
+    <header class="my-orders-header">
+
+        <div>
+            <span class="my-orders-eyebrow">
+                TÀI KHOẢN CỦA BẠN
+            </span>
+
+            <h1>Đơn hàng của tôi</h1>
+
+            <p>
+                Theo dõi tình trạng thanh toán và quá trình giao hàng.
+            </p>
+        </div>
+
+        <a asp-page="/Books/Index"
+           class="my-orders-shop-link">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M19 12H5"></path>
+                <path d="M12 19l-7-7 7-7"></path>
+            </svg>
+
+            Tiếp tục mua sách
+        </a>
+
+    </header>
+
+    <!-- Thống kê -->
+    <section class="my-orders-summary">
+
+        <article class="my-orders-summary-card">
+
+            <span class="my-orders-summary-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M6 3h12v18H6z"></path>
+                    <path d="M9 7h6"></path>
+                    <path d="M9 11h6"></path>
+                    <path d="M9 15h4"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Tổng đơn hàng</span>
+                <strong>@totalOrders</strong>
+            </div>
+
+        </article>
+
+        <article class="my-orders-summary-card">
+
+            <span class="my-orders-summary-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="12"
+                            cy="12"
+                            r="9"></circle>
+                    <path d="M12 7v5l3 2"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Chờ xác nhận</span>
+                <strong>@waitingOrders</strong>
+            </div>
+
+        </article>
+
+        <article class="my-orders-summary-card">
+
+            <span class="my-orders-summary-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M3 6h12v10H3z"></path>
+                    <path d="M15 9h3l3 3v4h-6z"></path>
+                    <circle cx="7"
+                            cy="18"
+                            r="2"></circle>
+                    <circle cx="18"
+                            cy="18"
+                            r="2"></circle>
+                </svg>
+            </span>
+
+            <div>
+                <span>Đang giao</span>
+                <strong>@shippingOrders</strong>
+            </div>
+
+        </article>
+
+        <article class="my-orders-summary-card">
+
+            <span class="my-orders-summary-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="12"
+                            cy="12"
+                            r="9"></circle>
+                    <path d="m8 12 3 3 5-6"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Hoàn thành</span>
+                <strong>@completedOrders</strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    @if (!Model.MyOrders.Any())
+    {
+        <!-- Chưa có đơn hàng -->
+        <section class="my-orders-empty">
+
+            <span class="my-orders-empty-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M6 3h12v18H6z"></path>
+                    <path d="M9 7h6"></path>
+                    <path d="M9 11h6"></path>
+                    <path d="M9 15h4"></path>
+                </svg>
+            </span>
+
+            <h2>Bạn chưa có đơn hàng nào</h2>
+
+            <p>
+                Những cuốn sách bạn đặt mua sẽ xuất hiện tại đây.
+            </p>
+
+            <a asp-page="/Books/Index"
+               class="btn my-orders-empty-button">
+                Khám phá kho sách
+            </a>
+
+        </section>
+    }
+    else
+    {
+        <!-- Bộ lọc -->
+        <section class="my-orders-toolbar">
+
+            <div class="my-orders-toolbar-title">
+                <h2>Lịch sử đặt hàng</h2>
+
+                <span>
+                    @totalOrders đơn hàng
+                </span>
+            </div>
+
+            <div class="my-orders-filters"
+                 role="group"
+                 aria-label="Lọc đơn hàng">
+
+                <button type="button"
+                        class="my-orders-filter active"
+                        data-order-filter="all">
+                    Tất cả
+                </button>
+
+                <button type="button"
+                        class="my-orders-filter"
+                        data-order-filter="Chờ xác nhận">
+                    Chờ xác nhận
+                </button>
+
+                <button type="button"
+                        class="my-orders-filter"
+                        data-order-filter="Đang giao">
+                    Đang giao
+                </button>
+
+                <button type="button"
+                        class="my-orders-filter"
+                        data-order-filter="Hoàn thành">
+                    Hoàn thành
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- Danh sách đơn hàng -->
+        <section class="my-orders-list"
+                 id="myOrdersList">
+
             @foreach (var order in Model.MyOrders)
             {
-                <tr>
-                    <td>#@order.OrderId</td>
-                    <td>@order.OrderDate?.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@order.TotalAmount.ToString("N0") đ</td>
-                    <td>@order.PaymentStatus</td>
-                    <td>
-                        @{
-                            var badgeClass = order.Status switch
+                var statusClass = order.Status switch
+                {
+                    "Chờ xác nhận" => "is-waiting",
+                    "Đang giao" => "is-shipping",
+                    "Hoàn thành" => "is-completed",
+                    "Đã hủy" => "is-cancelled",
+                    _ => "is-default"
+                };
+
+                var paymentClass = order.PaymentStatus switch
+                {
+                    "Đã thanh toán" => "is-paid",
+
+                    "Chờ xác nhận thanh toán"
+                    => "is-payment-waiting",
+
+                    "Chờ thanh toán"
+                    => "is-payment-waiting",
+
+                    "Chưa nhận được tiền"
+                    => "is-payment-failed",
+
+                    _ => "is-unpaid"
+                };
+
+                <article class="my-order-card"
+                         data-order-card
+                         data-order-status="@order.Status">
+
+                    <!-- Phần đầu đơn hàng -->
+                    <div class="my-order-card-header">
+
+                        <div class="my-order-identity">
+
+                            <span class="my-order-number">
+                                Đơn hàng #@order.OrderId
+                            </span>
+
+                            <span class="my-order-date">
+                                Đặt lúc
+                                @order.OrderDate?.ToString("HH:mm, dd/MM/yyyy")
+                            </span>
+
+                        </div>
+
+                        <span class="my-order-status @statusClass">
+                            <span></span>
+                            @order.Status
+                        </span>
+
+                    </div>
+
+                    <!-- Thông tin đơn -->
+                    <div class="my-order-card-body">
+
+                        <div class="my-order-information">
+
+                            <span class="my-order-information-label">
+                                Tổng thanh toán
+                            </span>
+
+                            <strong class="my-order-total">
+                                @order.TotalAmount.ToString("N0") đ
+                            </strong>
+
+                        </div>
+
+                        <div class="my-order-information">
+
+                            <span class="my-order-information-label">
+                                Trạng thái thanh toán
+                            </span>
+
+                            <span class="my-order-payment @paymentClass">
+                                @order.PaymentStatus
+                            </span>
+
+                        </div>
+
+                        <div class="my-order-information">
+
+                            <span class="my-order-information-label">
+                                Phương thức
+                            </span>
+
+                            <strong class="my-order-payment-method">
+                                @(string.IsNullOrWhiteSpace(order.PaymentMethod)
+                                                        ? "Chưa cập nhật"
+                                                        : order.PaymentMethod)
+                    </strong>
+
+                        </div>
+
+                        <div class="my-order-actions">
+
+                    @if (order.PaymentMethod == "Chuyển khoản" &&
+                                        order.PaymentStatus != "Đã thanh toán")
                             {
-                                "Chờ xác nhận" => "bg-warning text-dark",
-                                "Đang giao" => "bg-info text-dark",
-                                "Hoàn thành" => "bg-success",
-                                "Đã hủy" => "bg-danger",
-                                _ => "bg-secondary"
-                            };
-                        }
-                        <span class="badge @badgeClass">@order.Status</span>
-                    </td>
-                    <td>
-                        <a asp-page="Details" asp-route-id="@order.OrderId" class="btn btn-sm btn-primary">Xem chi tiết</a>
-                    </td>
-                </tr>
+                                <a asp-page="/Cart/BankTransfer"
+                                   asp-route-id="@order.OrderId"
+                                   class="my-order-bank-link">
+
+                                    Xem chuyển khoản
+                                </a>
+                            }
+
+                            <a asp-page="Details"
+                               asp-route-id="@order.OrderId"
+                               class="my-order-details-button">
+
+                                Xem chi tiết
+
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m13 6 6 6-6 6"></path>
+                                </svg>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </article>
             }
-        </tbody>
-    </table>
+
+            <!-- Không có kết quả khi lọc -->
+            <div class="my-orders-filter-empty"
+                 id="myOrdersFilterEmpty"
+                 hidden>
+
+                Không có đơn hàng thuộc trạng thái này.
+
+            </div>
+
+        </section>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        document
+            .querySelectorAll("[data-order-filter]")
+            .forEach(function (button) {
+
+                button.addEventListener("click", function () {
+
+                    const selectedStatus =
+                        button.dataset.orderFilter;
+
+                    const cards =
+                        document.querySelectorAll("[data-order-card]");
+
+                    let visibleCount = 0;
+
+                    document
+                        .querySelectorAll("[data-order-filter]")
+                        .forEach(function (filterButton) {
+                            filterButton.classList.remove("active");
+                        });
+
+                    button.classList.add("active");
+
+                    cards.forEach(function (card) {
+
+                        const cardStatus =
+                            card.dataset.orderStatus;
+
+                        const shouldShow =
+                            selectedStatus === "all" ||
+                            cardStatus === selectedStatus;
+
+                        card.hidden = !shouldShow;
+
+                        if (shouldShow) {
+                            visibleCount++;
+                        }
+                    });
+
+                    const emptyMessage =
+                        document.getElementById(
+                            "myOrdersFilterEmpty"
+                        );
+
+                    if (emptyMessage) {
+                        emptyMessage.hidden =
+                            visibleCount !== 0;
+                    }
+                });
+            });
+    </script>
 }

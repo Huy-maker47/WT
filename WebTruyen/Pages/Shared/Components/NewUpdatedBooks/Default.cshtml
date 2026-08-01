@@ -1,60 +1,105 @@
 ﻿@model List<WebTruyen.Models.Book>
 
-<section class="card h-100 border-0 shadow-sm">
-    <div class="card-header bg-dark text-white">
-        <h4 class="mb-0">Truyện mới cập nhật</h4>
-    </div>
+<section class="home-spotlight-panel home-spotlight-updated">
 
-    <div class="card-body">
+    <header class="home-spotlight-header">
+
+        <span class="home-spotlight-icon">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="12"
+                        cy="12"
+                        r="9"></circle>
+                <path d="M12 7v5l3 2"></path>
+            </svg>
+
+        </span>
+
+        <div>
+            <span>VỪA CẬP NHẬT</span>
+            <h2>Sách mới nhất</h2>
+        </div>
+
+    </header>
+
+    <div class="home-spotlight-body">
+
         @if (Model == null || Model.Count == 0)
         {
-            <div class="alert alert-info mb-0">
-                Chưa có sách để hiển thị.
+            <div class="home-spotlight-empty">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M3 5h7a3 3 0 0 1 3 3v12a3 3 0 0 0-3-3H3Z"></path>
+                    <path d="M21 5h-7a3 3 0 0 0-3 3v12a3 3 0 0 1 3-3h7Z"></path>
+                </svg>
+
+                <strong>Chưa có sách mới</strong>
+
+                <span>
+                    Sách vừa cập nhật sẽ xuất hiện tại đây.
+                </span>
+
             </div>
         }
         else
         {
-            @foreach (var book in Model)
-            {
-                <div class="d-flex gap-3 py-3 border-bottom">
-                    <a asp-page="/Books/Details"
-                       asp-route-id="@book.BookId">
+            <div class="home-spotlight-list">
 
-                        <img src="@(string.IsNullOrWhiteSpace(book.ImageUrl)
-                                                                 ? "/images/no-image.png"
-                                                                 : book.ImageUrl)"
-                                                                                 alt="@book.Title"
-                                                                                 class="rounded border"
-                                                                                 style="width:75px;
-                                                                                                height:105px;
-                                                                                                object-fit:cover;" />
-                                                                        </a>
+                @foreach (var book in Model)
+                {
+                    <article class="home-spotlight-item">
 
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1">
-                            <a asp-page="/Books/Details"
-                               asp-route-id="@book.BookId"
-                               class="text-dark text-decoration-none">
-                                @book.Title
-                            </a>
-                        </h6>
+                        <span class="home-spotlight-new-badge">
+                            Mới
+                        </span>
 
-                        <div class="small text-muted mb-1">
-                            @book.Author
+                        <a asp-page="/Books/Details"
+                           asp-route-id="@book.BookId"
+                           class="home-spotlight-cover">
+
+                            <img src="@(string.IsNullOrWhiteSpace(book.ImageUrl)
+                                                                         ? "/images/no-image.png"
+                                                                         : book.ImageUrl)"
+                                                                                         alt="@book.Title" />
+
+                        </a>
+
+                        <div class="home-spotlight-information">
+
+                            <h3>
+                                <a asp-page="/Books/Details"
+                                   asp-route-id="@book.BookId">
+
+                                    @book.Title
+
+                                </a>
+                            </h3>
+
+                            <p>@book.Author</p>
+
+                            <div class="home-spotlight-meta">
+
+                                <strong>
+                                    @book.Price.ToString("N0") đ
+                                </strong>
+
+                                <span>
+                                    @((book.UpdatedDate ?? book.CreatedDate)?
+                                                                .ToString("dd/MM/yyyy"))
+                        </span>
+
+                            </div>
+
                         </div>
 
-                        <div class="text-danger fw-bold">
-                            @book.Price.ToString("N0") đ
-                        </div>
+                    </article>
+                        }
 
-                        <small class="text-muted">
-                            Cập nhật:
-                            @((book.UpdatedDate ?? book.CreatedDate)?
-                                                .ToString("dd/MM/yyyy"))
-                </small>
             </div>
-        </div>
-                }
         }
+
     </div>
+
 </section>

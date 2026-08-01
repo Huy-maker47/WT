@@ -60,10 +60,10 @@ namespace WebTruyen.Pages.Cart
             CartData = cart;
             return Page();
         }
-
         public async Task<IActionResult> OnPostAsync()
         {
             var cart = await GetCartAsync();
+
             if (cart == null || !cart.CartItems.Any())
             {
                 return RedirectToPage("/Cart/Index");
@@ -75,18 +75,31 @@ namespace WebTruyen.Pages.Cart
                 return Page();
             }
 
+            bool isBankTransfer =
+                PaymentMethod == "Chuyển khoản";
+
             var order = new Order
             {
                 UserId = GetUserId(),
                 OrderDate = DateTime.Now,
+
                 ReceiverName = ReceiverName,
                 ReceiverPhone = ReceiverPhone,
                 ShippingAddress = ShippingAddress,
-                PaymentMethod = PaymentMethod,
-                PaymentStatus = "Chưa thanh toán",
+
+                PaymentMethod = isBankTransfer
+                    ? "Chuyển khoản"
+                    : "COD",
+
+                PaymentStatus = isBankTransfer
+                    ? "Chờ thanh toán"
+                    : "Chưa thanh toán",
+
                 Status = "Chờ xác nhận",
                 Note = Note,
-                TotalAmount = cart.CartItems.Sum(ci => ci.Quantity * ci.Book.Price)
+
+                TotalAmount = cart.CartItems.Sum(
+                    item => item.Quantity * item.Book.Price)
             };
 
             _context.Orders.Add(order);
@@ -103,10 +116,71 @@ namespace WebTruyen.Pages.Cart
                 });
             }
 
+            // Xóa sản phẩm khỏi giỏ sau khi tạo đơn.
             _context.CartItems.RemoveRange(cart.CartItems);
+
             await _context.SaveChangesAsync();
 
-            return RedirectToPage("/Cart/OrderSuccess", new { id = order.OrderId });
+            // Chuyển khoản đi qua trang thanh toán riêng.
+            if (isBankTransfer)
+            {
+                return RedirectToPage(
+                    "/Cart/BankTransfer",
+                    new { id = order.OrderId });
+            }
+
+            // COD đi thẳng tới trang đặt hàng thành công.
+            return RedirectToPage(
+                "/Cart/OrderSuccess",
+                new { id = order.OrderId });
         }
+
+    //    public async Task<IActionResult> OnPostAsync()
+    //    {
+    //        var cart = await GetCartAsync();
+    //        if (cart == null || !cart.CartItems.Any())
+    //        {
+    //            return RedirectToPage("/Cart/Index");
+    //        }
+
+    //        if (!ModelState.IsValid)
+    //        {
+    //            CartData = cart;
+    //            return Page();
+    //        }
+
+    //        var order = new Order
+    //        {
+    //            UserId = GetUserId(),
+    //            OrderDate = DateTime.Now,
+    //            ReceiverName = ReceiverName,
+    //            ReceiverPhone = ReceiverPhone,
+    //            ShippingAddress = ShippingAddress,
+    //            PaymentMethod = PaymentMethod,
+    //            PaymentStatus = "Chưa thanh toán",
+    //            Status = "Chờ xác nhận",
+    //            Note = Note,
+    //            TotalAmount = cart.CartItems.Sum(ci => ci.Quantity * ci.Book.Price)
+    //        };
+
+    //        _context.Orders.Add(order);
+    //        await _context.SaveChangesAsync();
+
+    //        foreach (var item in cart.CartItems)
+    //        {
+    //            _context.OrderDetails.Add(new OrderDetail
+    //            {
+    //                OrderId = order.OrderId,
+    //                BookId = item.BookId,
+    //                Quantity = item.Quantity,
+    //                UnitPrice = item.Book.Price
+    //            });
+    //        }
+
+    //        _context.CartItems.RemoveRange(cart.CartItems);
+    //        await _context.SaveChangesAsync();
+
+    //        return RedirectToPage("/Cart/OrderSuccess", new { id = order.OrderId });
+    //    }
     }
 }

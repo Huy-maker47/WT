@@ -1,36 +1,226 @@
 ﻿@page
 @model WebTruyen.Pages.Account.RegisterModel
+
 @{
     ViewData["Title"] = "Đăng ký";
 }
 
-<h2>Đăng ký tài khoản</h2>
+<div class="auth-page register-page">
+    <div class="auth-card register-card">
 
-<form method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
-    <div class="mb-3">
-        <label>Tên đăng nhập</label>
-        <input asp-for="Input.Username" class="form-control" required />
+        <!-- Khung giới thiệu bên trái -->
+        <div class="auth-visual register-visual">
+            <div class="auth-logo">M</div>
+
+            <h1>Tham gia METruyen</h1>
+
+            <p>
+                Tạo tài khoản để mua sách, theo dõi đơn hàng,
+                lưu sách yêu thích và nhận những thông báo mới nhất.
+            </p>
+
+            <div class="register-benefits">
+                <div>
+                    <span>✓</span>
+                    Mua sách thuận tiện
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Theo dõi đơn hàng
+                </div>
+
+                <div>
+                    <span>✓</span>
+                    Lưu sách yêu thích
+                </div>
+            </div>
+        </div>
+
+        <!-- Form đăng ký bên phải -->
+        <div class="auth-form-panel register-form-panel">
+
+            <div class="auth-heading">
+                <span class="auth-label">METruyen</span>
+
+                <h2>Đăng ký tài khoản</h2>
+
+                <p>Điền thông tin để tạo tài khoản mới.</p>
+            </div>
+
+            <form method="post">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="alert alert-danger auth-validation">
+                </div>
+
+                <div class="register-form-grid">
+
+                    <!-- Tên đăng nhập -->
+                    <div class="register-field-full">
+                        <label asp-for="Input.Username"
+                               class="form-label">
+                            Tên đăng nhập
+                            <span class="required-mark">*</span>
+                        </label>
+
+                        <input asp-for="Input.Username"
+                               class="form-control auth-input"
+                               placeholder="Nhập tên đăng nhập"
+                               autocomplete="username"
+                               autofocus />
+
+                        <span asp-validation-for="Input.Username"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <!-- Mật khẩu -->
+                    <div class="register-field-full">
+                        <label asp-for="Input.PasswordHash"
+                               class="form-label">
+                            Mật khẩu
+                            <span class="required-mark">*</span>
+                        </label>
+
+                        <div class="auth-password-wrap">
+                            <input asp-for="Input.PasswordHash"
+                                   id="registerPassword"
+                                   type="password"
+                                   class="form-control auth-input"
+                                   placeholder="Nhập mật khẩu"
+                                   autocomplete="new-password" />
+
+                            <button type="button"
+                                    id="toggleRegisterPassword"
+                                    class="auth-password-toggle">
+                                Hiện
+                            </button>
+                        </div>
+
+                        <span asp-validation-for="Input.PasswordHash"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <!-- Họ tên -->
+                    <div>
+                        <label asp-for="Input.FullName"
+                               class="form-label">
+                            Họ và tên
+                            <span class="required-mark">*</span>
+                        </label>
+
+                        <input asp-for="Input.FullName"
+                               class="form-control auth-input"
+                               placeholder="Nhập họ và tên"
+                               autocomplete="name" />
+
+                        <span asp-validation-for="Input.FullName"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label asp-for="Input.Email"
+                               class="form-label">
+                            Email
+                            <span class="required-mark">*</span>
+                        </label>
+
+                        <input asp-for="Input.Email"
+                               type="email"
+                               class="form-control auth-input"
+                               placeholder="example@gmail.com"
+                               autocomplete="email" />
+
+                        <span asp-validation-for="Input.Email"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <!-- Số điện thoại -->
+                    <div>
+                        <label asp-for="Input.Phone"
+                               class="form-label">
+                            Số điện thoại
+                        </label>
+
+                        <input asp-for="Input.Phone"
+                               type="tel"
+                               class="form-control auth-input"
+                               placeholder="Nhập số điện thoại"
+                               autocomplete="tel" />
+
+                        <span asp-validation-for="Input.Phone"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                    <!-- Địa chỉ -->
+                    <div>
+                        <label asp-for="Input.Address"
+                               class="form-label">
+                            Địa chỉ
+                        </label>
+
+                        <input asp-for="Input.Address"
+                               class="form-control auth-input"
+                               placeholder="Nhập địa chỉ"
+                               autocomplete="street-address" />
+
+                        <span asp-validation-for="Input.Address"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                </div>
+
+                <button type="submit"
+                        class="btn auth-submit">
+                    Tạo tài khoản
+                </button>
+
+            </form>
+
+            <div class="auth-register">
+                Đã có tài khoản?
+
+                <a asp-page="/Account/Login">
+                    Đăng nhập ngay
+                </a>
+            </div>
+
+            <div class="auth-back">
+                <a asp-page="/Index">
+                    ← Quay lại trang chủ
+                </a>
+            </div>
+
+        </div>
     </div>
-    <div class="mb-3">
-        <label>Mật khẩu</label>
-        <input asp-for="Input.PasswordHash" type="password" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Họ tên</label>
-        <input asp-for="Input.FullName" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Email</label>
-        <input asp-for="Input.Email" class="form-control" required />
-    </div>
-    <div class="mb-3">
-        <label>Số điện thoại</label>
-        <input asp-for="Input.Phone" class="form-control" />
-    </div>
-    <div class="mb-3">
-        <label>Địa chỉ</label>
-        <input asp-for="Input.Address" class="form-control" />
-    </div>
-    <button type="submit" class="btn btn-primary">Đăng ký</button>
-</form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const registerPassword =
+            document.getElementById("registerPassword");
+
+        const toggleRegisterPassword =
+            document.getElementById("toggleRegisterPassword");
+
+        toggleRegisterPassword.addEventListener("click", function () {
+            const isHidden =
+                registerPassword.type === "password";
+
+            registerPassword.type =
+                isHidden ? "text" : "password";
+
+            toggleRegisterPassword.textContent =
+                isHidden ? "Ẩn" : "Hiện";
+        });
+    </script>
+}

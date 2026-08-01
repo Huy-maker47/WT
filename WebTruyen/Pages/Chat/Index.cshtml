@@ -1,93 +1,237 @@
 ﻿@page
 @model WebTruyen.Pages.Chat.IndexModel
+
 @{
     ViewData["Title"] = "Hỗ trợ trực tuyến";
 }
 
-<h2>Chat với Admin</h2>
+<div class="customer-chat-page">
 
-<div id="chatBox" class="border rounded p-3 mb-3" style="height:400px; overflow-y:auto; background:var(--cream);">
-    @foreach (var msg in Model.Messages)
-    {
-        <div class="mb-2 @(msg.SenderId == Model.MyUserId ? "text-end" : "text-start")">
-            <span class="badge @(msg.SenderId == Model.MyUserId ? "bg-success" : "bg-secondary")">
-                @msg.Content
-            </span>
+    <div class="customer-chat-title">
+        <span>TRUNG TÂM HỖ TRỢ</span>
+        <h1>Chat với Admin</h1>
+        <p>Trao đổi về sách, đơn hàng và thanh toán.</p>
+    </div>
+
+    <section class="customer-chat-card">
+
+        <!-- Đầu khung chat -->
+        <header class="customer-chat-header">
+
+            <div class="customer-chat-admin">
+                <div class="customer-chat-avatar">
+                    A
+                    <span></span>
+                </div>
+
+                <div>
+                    <h2>Hỗ trợ METruyen</h2>
+                    <p>Admin phụ trách hỗ trợ khách hàng</p>
+                </div>
+            </div>
+
+            <div id="connectionStatus"
+                 class="customer-chat-status connecting">
+
+                <span></span>
+                <strong>Đang kết nối</strong>
+            </div>
+
+        </header>
+
+        <!-- Danh sách tin nhắn -->
+        <div id="chatBox"
+             class="customer-chat-messages">
+
+            @if (!Model.Messages.Any())
+            {
+                <div id="chatEmptyState"
+                     class="customer-chat-empty">
+
+                    <div class="customer-chat-empty-icon">
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"></path>
+                            <path d="M8 12h.01"></path>
+                            <path d="M12 12h.01"></path>
+                            <path d="M16 12h.01"></path>
+                        </svg>
+                    </div>
+
+                    <h3>Bắt đầu cuộc trò chuyện</h3>
+
+                    <p>
+                        Gửi nội dung cần hỗ trợ cho Admin.
+                    </p>
+                </div>
+            }
+
+            @foreach (var msg in Model.Messages)
+            {
+                var isMine =
+                msg.SenderId == Model.MyUserId;
+
+                <div class="customer-chat-message
+                                @(isMine ? "mine" : "admin")">
+
+                    @if (!isMine)
+                    {
+                        <div class="customer-chat-message-avatar">
+                            A
+                        </div>
+                    }
+
+                    <div class="customer-chat-message-content">
+
+                        <span class="customer-chat-sender">
+                            @(isMine ? "Bạn" : "Admin")
+                        </span>
+
+                        <div class="customer-chat-bubble">
+                            @msg.Content
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
         </div>
-    }
+
+        <!-- Form nhập -->
+        <form id="chatForm"
+              class="customer-chat-form"
+              method="post"
+              autocomplete="off">
+
+            @Html.AntiForgeryToken()
+
+            <div class="customer-chat-input-box">
+
+                <input type="text"
+                       id="messageInput"
+                       placeholder="Nhập tin nhắn..."
+                       autocomplete="off"
+                       maxlength="1000" />
+
+                <span>Nhấn Enter để gửi</span>
+
+            </div>
+
+            <button type="submit"
+                    id="sendButton"
+                    class="customer-chat-send">
+
+                <span class="customer-chat-send-text">
+                    Gửi
+                </span>
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="m22 2-7 20-4-9-9-4Z"></path>
+                    <path d="M22 2 11 13"></path>
+                </svg>
+
+            </button>
+
+        </form>
+
+    </section>
+
+    <p class="customer-chat-warning">
+        Không chia sẻ mật khẩu hoặc thông tin ngân hàng trong cuộc trò chuyện.
+    </p>
+
 </div>
 
-
-<form id="chatForm" class="d-flex gap-2" method="post">
-    @Html.AntiForgeryToken()
-
-    <input type="text"
-           id="messageInput"
-           class="form-control"
-           placeholder="Nhập tin nhắn..."
-           autocomplete="off" />
-
-    <button type="submit" class="btn btn-primary">
-        Gửi
-    </button>
-</form>
-
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js">
+    </script>
 
     <script>
-        const adminId = @Model.AdminId;
+        const adminId = Number("@Model.AdminId");
 
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/chatHub")
-            .withAutomaticReconnect()
-            .build();
+        const chatBox =
+            document.getElementById("chatBox");
 
-        connection.on("ReceiveMessage", function (content) {
-            appendMessage(content, false);
-        });
+        const chatForm =
+            document.getElementById("chatForm");
 
-        async function startConnection() {
-            try {
-                await connection.start();
-                console.log("SignalR đã kết nối");
-            } catch (error) {
-                console.error("Không kết nối được SignalR:", error);
-                setTimeout(startConnection, 3000);
-            }
-        }
+        const messageInput =
+            document.getElementById("messageInput");
 
-        startConnection();
+        const sendButton =
+            document.getElementById("sendButton");
 
-        document.getElementById("chatForm")
-            .addEventListener("submit", async function (e) {
-                e.preventDefault();
+        const sendButtonText =
+            sendButton.querySelector(
+                ".customer-chat-send-text"
+            );
 
-                const input = document.getElementById("messageInput");
-                const content = input.value.trim();
+        const connectionStatus =
+            document.getElementById(
+                "connectionStatus"
+            );
+
+        let connection = null;
+
+        /*
+         * Gửi tin nhắn.
+         * Sự kiện này không phụ thuộc SignalR.
+         */
+        chatForm.addEventListener(
+            "submit",
+            async function (event) {
+                event.preventDefault();
+
+                const content =
+                    messageInput.value.trim();
 
                 if (!content) {
+                    messageInput.focus();
                     return;
                 }
 
                 if (adminId <= 0) {
-                    alert("Không tìm thấy tài khoản Admin.");
+                    showError(
+                        "Không tìm thấy tài khoản Admin."
+                    );
+
                     return;
                 }
 
-                const token = document.querySelector(
-                    '#chatForm input[name="__RequestVerificationToken"]'
-                ).value;
+                const tokenInput =
+                    chatForm.querySelector(
+                        'input[name="__RequestVerificationToken"]'
+                    );
+
+                if (!tokenInput) {
+                    showError(
+                        "Không tìm thấy mã bảo mật."
+                    );
+
+                    return;
+                }
+
+                setSending(true);
 
                 try {
                     const response = await fetch(
-                        window.location.pathname + "?handler=SendMessage",
+                        window.location.pathname +
+                        "?handler=SendMessage",
                         {
                             method: "POST",
+                            credentials: "same-origin",
+
                             headers: {
-                                "Content-Type": "application/json",
-                                "RequestVerificationToken": token
+                                "Content-Type":
+                                    "application/json",
+
+                                "RequestVerificationToken":
+                                    tokenInput.value
                             },
+
                             body: JSON.stringify({
                                 receiverId: adminId,
                                 content: content
@@ -96,55 +240,301 @@
                     );
 
                     if (!response.ok) {
-                        const errorText = await response.text();
+                        const errorText =
+                            await response.text();
 
                         console.error(
-                            "Lưu tin nhắn thất bại:",
+                            "Lỗi lưu tin nhắn:",
                             response.status,
                             errorText
                         );
 
-                        alert("Không gửi được tin nhắn.");
-                        return;
-                    }
-
-                    if (
-                        connection.state ===
-                        signalR.HubConnectionState.Connected
-                    ) {
-                        await connection.invoke(
-                            "SendMessage",
-                            adminId,
-                            content
+                        throw new Error(
+                            "Không lưu được tin nhắn."
                         );
                     }
 
+                    /*
+                     * Hiện tin của mình ngay sau khi
+                     * backend lưu thành công.
+                     */
                     appendMessage(content, true);
-                    input.value = "";
-                } catch (error) {
-                    console.error("Lỗi gửi tin nhắn:", error);
-                    alert("Có lỗi khi gửi tin nhắn.");
+
+                    messageInput.value = "";
+                    messageInput.focus();
+
+                    /*
+                     * Gửi realtime riêng.
+                     * SignalR lỗi cũng không làm mất
+                     * tin nhắn đã lưu.
+                     */
+                    if (
+                        connection &&
+                        connection.state ===
+                        signalR
+                            .HubConnectionState
+                            .Connected
+                    ) {
+                        try {
+                            await connection.invoke(
+                                "SendMessage",
+                                adminId,
+                                content
+                            );
+                        }
+                        catch (signalRError) {
+                            console.warn(
+                                "Tin đã lưu nhưng realtime lỗi:",
+                                signalRError
+                            );
+                        }
+                    }
                 }
-            });
+                catch (error) {
+                    console.error(
+                        "Lỗi gửi tin nhắn:",
+                        error
+                    );
 
-        function appendMessage(content, isMine) {
-            const box = document.getElementById("chatBox");
-            const div = document.createElement("div");
+                    showError(
+                        "Không gửi được tin nhắn. Vui lòng thử lại."
+                    );
+                }
+                finally {
+                    setSending(false);
+                }
+            }
+        );
 
-            div.className =
-                "mb-2 " + (isMine ? "text-end" : "text-start");
+        /*
+         * Input type text vốn đã gửi bằng Enter.
+         * Đoạn này bảo đảm hành vi luôn đúng.
+         */
+        messageInput.addEventListener(
+            "keydown",
+            function (event) {
+                if (
+                    event.key === "Enter" &&
+                    !event.isComposing
+                ) {
+                    event.preventDefault();
+                    chatForm.requestSubmit();
+                }
+            }
+        );
 
-            const span = document.createElement("span");
+        /*
+         * Khởi tạo SignalR sau khi form đã sẵn sàng.
+         */
+        async function startSignalR() {
+            if (typeof signalR === "undefined") {
+                console.error(
+                    "Không tải được thư viện SignalR."
+                );
 
-            span.className =
-                "badge " +
-                (isMine ? "bg-success" : "bg-secondary");
+                updateConnectionStatus(
+                    "disconnected"
+                );
 
-            span.textContent = content;
+                return;
+            }
 
-            div.appendChild(span);
-            box.appendChild(div);
-            box.scrollTop = box.scrollHeight;
+            connection =
+                new signalR.HubConnectionBuilder()
+                    .withUrl("/chatHub")
+                    .withAutomaticReconnect()
+                    .build();
+
+            connection.on(
+                "ReceiveMessage",
+                function (content) {
+                    appendMessage(
+                        content,
+                        false
+                    );
+                }
+            );
+
+            connection.onreconnecting(
+                function () {
+                    updateConnectionStatus(
+                        "connecting"
+                    );
+                }
+            );
+
+            connection.onreconnected(
+                function () {
+                    updateConnectionStatus(
+                        "connected"
+                    );
+                }
+            );
+
+            connection.onclose(
+                function () {
+                    updateConnectionStatus(
+                        "disconnected"
+                    );
+                }
+            );
+
+            try {
+                await connection.start();
+
+                updateConnectionStatus(
+                    "connected"
+                );
+            }
+            catch (error) {
+                console.error(
+                    "SignalR chưa kết nối:",
+                    error
+                );
+
+                updateConnectionStatus(
+                    "disconnected"
+                );
+
+                setTimeout(
+                    startSignalR,
+                    3000
+                );
+            }
         }
+
+        function appendMessage(
+            content,
+            isMine
+        ) {
+            const emptyState =
+                document.getElementById(
+                    "chatEmptyState"
+                );
+
+            if (emptyState) {
+                emptyState.remove();
+            }
+
+            const message =
+                document.createElement("div");
+
+            message.className =
+                "customer-chat-message " +
+                (isMine ? "mine" : "admin");
+
+            if (!isMine) {
+                const avatar =
+                    document.createElement("div");
+
+                avatar.className =
+                    "customer-chat-message-avatar";
+
+                avatar.textContent = "A";
+
+                message.appendChild(avatar);
+            }
+
+            const messageContent =
+                document.createElement("div");
+
+            messageContent.className =
+                "customer-chat-message-content";
+
+            const sender =
+                document.createElement("span");
+
+            sender.className =
+                "customer-chat-sender";
+
+            sender.textContent =
+                isMine ? "Bạn" : "Admin";
+
+            const bubble =
+                document.createElement("div");
+
+            bubble.className =
+                "customer-chat-bubble";
+
+            /*
+             * textContent giúp tránh chèn HTML
+             * từ nội dung người dùng.
+             */
+            bubble.textContent = content;
+
+            messageContent.appendChild(sender);
+            messageContent.appendChild(bubble);
+
+            message.appendChild(messageContent);
+            chatBox.appendChild(message);
+
+            scrollToBottom();
+        }
+
+        function setSending(isSending) {
+            sendButton.disabled = isSending;
+
+            sendButtonText.textContent =
+                isSending
+                    ? "Đang gửi"
+                    : "Gửi";
+        }
+
+        function showError(content) {
+            const error =
+                document.createElement("div");
+
+            error.className =
+                "customer-chat-error";
+
+            error.textContent = content;
+
+            chatBox.appendChild(error);
+
+            scrollToBottom();
+
+            setTimeout(
+                function () {
+                    error.remove();
+                },
+                3500
+            );
+        }
+
+        function updateConnectionStatus(
+            status
+        ) {
+            connectionStatus.className =
+                "customer-chat-status " +
+                status;
+
+            const statusText =
+                connectionStatus.querySelector(
+                    "strong"
+                );
+
+            if (status === "connected") {
+                statusText.textContent =
+                    "Đã kết nối";
+            }
+            else if (
+                status === "disconnected"
+            ) {
+                statusText.textContent =
+                    "Mất kết nối";
+            }
+            else {
+                statusText.textContent =
+                    "Đang kết nối";
+            }
+        }
+
+        function scrollToBottom() {
+            chatBox.scrollTop =
+                chatBox.scrollHeight;
+        }
+
+        scrollToBottom();
+        startSignalR();
     </script>
 }

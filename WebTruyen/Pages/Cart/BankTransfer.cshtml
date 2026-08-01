@@ -1,0 +1,182 @@
+﻿@page "{id:int}"
+@model WebTruyen.Pages.Cart.BankTransferModel
+
+@{
+    ViewData["Title"] = "Chuyển khoản ngân hàng";
+}
+
+<div class="bank-transfer-page">
+
+    <div class="bank-transfer-heading">
+        <span>THANH TOÁN ĐƠN HÀNG</span>
+
+        <h1>Chuyển khoản ngân hàng</h1>
+
+        <p>
+            Chuyển đúng số tiền và nội dung để đơn hàng
+            được xác nhận nhanh chóng.
+        </p>
+    </div>
+
+    <div class="bank-transfer-layout">
+
+        <!-- Thông tin chuyển khoản -->
+        <section class="bank-transfer-card">
+
+            <div class="bank-transfer-card-header">
+                <div>
+                    <h2>Thông tin tài khoản</h2>
+                    <p>Đơn hàng #@Model.OrderData.OrderId</p>
+                </div>
+
+                <span class="bank-transfer-status">
+                    @Model.OrderData.PaymentStatus
+                </span>
+            </div>
+
+            <div class="bank-transfer-information">
+
+                <div class="bank-transfer-row">
+                    <span>Ngân hàng</span>
+                    <strong>@Model.BankName</strong>
+                </div>
+
+                <div class="bank-transfer-row">
+                    <span>Số tài khoản</span>
+
+                    <div>
+                        <strong id="accountNumber">
+                            @Model.AccountNumber
+                        </strong>
+
+                        <button type="button"
+                                class="bank-copy-button"
+                                data-copy="@Model.AccountNumber">
+                            Sao chép
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bank-transfer-row">
+                    <span>Chủ tài khoản</span>
+                    <strong>@Model.AccountHolder</strong>
+                </div>
+
+                <div class="bank-transfer-row">
+                    <span>Số tiền</span>
+
+                    <strong class="bank-transfer-amount">
+                        @Model.OrderData.TotalAmount.ToString("N0") đ
+                    </strong>
+                </div>
+
+                <div class="bank-transfer-row">
+                    <span>Nội dung chuyển khoản</span>
+
+                    <div>
+                        <strong class="bank-transfer-content">
+                            @Model.TransferContent
+                        </strong>
+
+                        <button type="button"
+                                class="bank-copy-button"
+                                data-copy="@Model.TransferContent">
+                            Sao chép
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="bank-transfer-warning">
+                Vui lòng nhập chính xác nội dung chuyển khoản.
+                Không tự ý thay đổi mã đơn hàng.
+            </div>
+
+            <form method="post"
+                  asp-page-handler="Confirm">
+
+                <input type="hidden"
+                       name="id"
+                       value="@Model.OrderData.OrderId" />
+
+                <button type="submit"
+                        class="btn bank-transfer-confirm"
+                        onclick="return confirm('Bạn xác nhận đã thực hiện chuyển khoản?');">
+
+                    Tôi đã chuyển khoản
+                </button>
+            </form>
+
+            <p class="bank-transfer-note">
+                Sau khi xác nhận, thanh toán sẽ được chuyển sang
+                trạng thái chờ Admin kiểm tra.
+            </p>
+
+        </section>
+
+        <!-- Tóm tắt đơn -->
+        <aside class="bank-order-summary">
+
+            <h2>Đơn hàng của bạn</h2>
+
+            @foreach (var item in Model.OrderData.OrderDetails)
+            {
+                <div class="bank-order-item">
+
+                    <img src="@(string.IsNullOrWhiteSpace(item.Book.ImageUrl)
+                                                         ? "/images/no-image.png"
+                                                         : item.Book.ImageUrl)"
+                     alt="@item.Book.Title" />
+
+                    <div>
+                        <strong>@item.Book.Title</strong>
+
+                        <span>
+                            @item.Quantity ×
+                            @item.UnitPrice.ToString("N0") đ
+                        </span>
+                    </div>
+
+                    <b>
+                        @((item.Quantity * item.UnitPrice).ToString("N0")) đ
+                    </b>
+
+                </div>
+                        }
+
+            <div class="bank-order-total">
+                <span>Tổng thanh toán</span>
+
+                <strong>
+                    @Model.OrderData.TotalAmount.ToString("N0") đ
+                </strong>
+            </div>
+
+        </aside>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document
+            .querySelectorAll(".bank-copy-button")
+            .forEach(function (button) {
+
+                button.addEventListener("click", async function () {
+                    const value = button.dataset.copy;
+
+                    await navigator.clipboard.writeText(value);
+
+                    const oldText = button.textContent;
+
+                    button.textContent = "Đã chép";
+
+                    setTimeout(function () {
+                        button.textContent = oldText;
+                    }, 1200);
+                });
+            });
+    </script>
+}

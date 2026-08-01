@@ -6,79 +6,351 @@
     Layout = "_AdminLayout";
 }
 
-<h2>Chat với @Model.CustomerName</h2>
+<div class="admin-support-chat-page">
 
-<a asp-page="Index"
-   class="btn btn-sm btn-secondary mb-3">
-    &larr; Quay lại danh sách
-</a>
+    <header class="admin-support-page-header">
 
-<div id="chatBox"
-     class="border rounded p-3 mb-3"
-     style="height:400px;
-            overflow-y:auto;
-            background:var(--cream);">
+        <div>
+            <a asp-page="Index"
+               class="admin-support-back">
 
-    @foreach (var msg in Model.Messages)
-    {
-        <div class="mb-2 @(msg.SenderId == Model.MyUserId
-                                        ? "text-end"
-                                        : "text-start")">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M19 12H5"></path>
+                    <path d="m12 19-7-7 7-7"></path>
+                </svg>
 
-        <span class="badge @(msg.SenderId == Model.MyUserId
-                                                ? "bg-success"
-                                                : "bg-secondary")">
-            @msg.Content
-        </span>
-    </div>
-        }
+                Quay lại danh sách
+            </a>
+
+            <span class="admin-support-eyebrow">
+                HỖ TRỢ KHÁCH HÀNG
+            </span>
+
+            <h1>Chat với @Model.CustomerName</h1>
+        </div>
+
+        <div id="adminConnectionStatus"
+             class="admin-support-connection connecting">
+
+            <span></span>
+            <strong>Đang kết nối</strong>
+
+        </div>
+
+    </header>
+
+    <section class="admin-support-chat-card">
+
+        <!-- Header hội thoại -->
+        <div class="admin-support-chat-header">
+
+            <div class="admin-support-customer">
+
+                <span class="admin-support-customer-avatar">
+                    @(string.IsNullOrWhiteSpace(Model.CustomerName)
+                                        ? "K"
+                                        : Model.CustomerName.Trim()
+                                        .Substring(0, 1)
+                                        .ToUpper())
+
+                    <i></i>
+                </span>
+
+                <div>
+                    <h2>@Model.CustomerName</h2>
+                    <p>Khách hàng METruyen</p>
+                </div>
+
+            </div>
+
+            <span class="admin-support-label">
+                Hội thoại hỗ trợ
+            </span>
+
+        </div>
+
+        <!-- Nội dung -->
+        <div id="adminChatBox"
+             class="admin-support-messages"
+             aria-live="polite">
+
+            @if (!Model.Messages.Any())
+            {
+                <div class="admin-support-empty"
+                     id="adminChatEmpty">
+
+                    <span>
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"></path>
+                        </svg>
+                    </span>
+
+                    <h3>Chưa có tin nhắn</h3>
+
+                    <p>
+                        Hãy bắt đầu cuộc trò chuyện với khách hàng.
+                    </p>
+
+                </div>
+            }
+
+            @foreach (var message in Model.Messages)
+            {
+                var isMine =
+                message.SenderId == Model.MyUserId;
+
+                <div class="admin-support-message
+                                @(isMine ? "mine" : "customer")">
+
+                    @if (!isMine)
+                    {
+                        <span class="admin-support-message-avatar">
+                            @(string.IsNullOrWhiteSpace(Model.CustomerName)
+                                                ? "K"
+                                                : Model.CustomerName.Trim()
+                                                .Substring(0, 1)
+                                                .ToUpper())
+                </span>
+                                }
+
+                    <div class="admin-support-message-content">
+
+                        <span class="admin-support-sender">
+                            @(isMine ? "Bạn" : Model.CustomerName)
+                        </span>
+
+                        <div class="admin-support-bubble">
+                            @message.Content
+                        </div>
+
+                        <time>
+                            @message.SentDate?.ToString("HH:mm")
+                        </time>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+
+        <!-- Form gửi -->
+        <form id="adminChatForm"
+              class="admin-support-composer"
+              method="post"
+              autocomplete="off">
+
+            @Html.AntiForgeryToken()
+
+            <div class="admin-support-input">
+
+                <input type="text"
+                       id="adminMessageInput"
+                       placeholder="Nhập nội dung trả lời..."
+                       maxlength="1000"
+                       autocomplete="off" />
+
+                <span>Nhấn Enter để gửi</span>
+
+            </div>
+
+            <button type="submit"
+                    id="adminSendButton"
+                    class="admin-support-send">
+
+                <span>Gửi</span>
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="m22 2-7 20-4-9-9-4Z"></path>
+                    <path d="M22 2 11 13"></path>
+                </svg>
+
+            </button>
+
+        </form>
+
+    </section>
+
 </div>
 
-<form id="chatForm"
-      class="d-flex gap-2"
-      method="post">
-
-    @Html.AntiForgeryToken()
-
-    <input type="text"
-           id="messageInput"
-           class="form-control"
-           placeholder="Nhập tin nhắn..."
-           autocomplete="off" />
-
-    <button type="submit"
-            id="sendButton"
-            class="btn btn-primary">
-        Gửi
-    </button>
-</form>
-
 @section Scripts {
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js">
+    </script>
 
     <script>
-        const customerId = @Model.CustomerId;
+        const customerId =
+            Number("@Model.CustomerId");
 
-        const sendMessageUrl =
-            '@Url.Page(
-                            "/AdminChat/Chat",
-                            "SendMessage",
-                            new { userId = Model.CustomerId }
-                    )';
+        const customerName =
+            @Html.Raw(
+                System.Text.Json.JsonSerializer.Serialize(
+                        Model.CustomerName
+                )
+                );
+
+    const chatBox =
+        document.getElementById(
+            "adminChatBox"
+        );
 
     const chatForm =
-        document.getElementById("chatForm");
+        document.getElementById(
+            "adminChatForm"
+        );
 
-        const messageInput =
-            document.getElementById("messageInput");
+    const messageInput =
+        document.getElementById(
+            "adminMessageInput"
+        );
 
-        const sendButton =
-            document.getElementById("sendButton");
+    const sendButton =
+        document.getElementById(
+            "adminSendButton"
+        );
 
-        const chatBox =
-            document.getElementById("chatBox");
+    const connectionStatus =
+        document.getElementById(
+            "adminConnectionStatus"
+        );
 
-        const connection =
+    let connection = null;
+
+    chatForm.addEventListener(
+        "submit",
+        async function (event) {
+            event.preventDefault();
+
+            const content =
+                messageInput.value.trim();
+
+            if (!content) {
+                messageInput.focus();
+                return;
+            }
+
+            const tokenInput =
+                chatForm.querySelector(
+                    'input[name="__RequestVerificationToken"]'
+                );
+
+            if (!tokenInput) {
+                showAdminChatError(
+                    "Không tìm thấy mã bảo mật."
+                );
+
+                return;
+            }
+
+            setAdminSending(true);
+
+            try {
+                const response = await fetch(
+                    window.location.pathname +
+                    "?handler=SendMessage",
+                    {
+                        method: "POST",
+                        credentials: "same-origin",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+
+                            "RequestVerificationToken":
+                                tokenInput.value
+                        },
+
+                        body: JSON.stringify({
+                            receiverId: customerId,
+                            content: content
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    const errorText =
+                        await response.text();
+
+                    console.error(
+                        "Lỗi lưu tin nhắn:",
+                        response.status,
+                        errorText
+                    );
+
+                    throw new Error(
+                        "Không thể lưu tin nhắn."
+                    );
+                }
+
+                appendAdminMessage(
+                    content,
+                    true
+                );
+
+                messageInput.value = "";
+                messageInput.focus();
+
+                if (
+                    connection &&
+                    connection.state ===
+                    signalR
+                        .HubConnectionState
+                        .Connected
+                ) {
+                    try {
+                        await connection.invoke(
+                            "SendMessage",
+                            customerId,
+                            content
+                        );
+                    }
+                    catch (signalRError) {
+                        console.warn(
+                            "Tin đã lưu nhưng realtime lỗi:",
+                            signalRError
+                        );
+                    }
+                }
+            }
+            catch (error) {
+                console.error(error);
+
+                showAdminChatError(
+                    "Không gửi được tin nhắn. Vui lòng thử lại."
+                );
+            }
+            finally {
+                setAdminSending(false);
+            }
+        }
+    );
+
+    messageInput.addEventListener(
+        "keydown",
+        function (event) {
+            if (
+                event.key === "Enter" &&
+                !event.isComposing
+            ) {
+                event.preventDefault();
+                chatForm.requestSubmit();
+            }
+        }
+    );
+
+    async function startAdminSignalR() {
+        if (typeof signalR === "undefined") {
+            updateAdminConnection(
+                "disconnected"
+            );
+
+            return;
+        }
+
+        connection =
             new signalR.HubConnectionBuilder()
                 .withUrl("/chatHub")
                 .withAutomaticReconnect()
@@ -87,139 +359,205 @@
         connection.on(
             "ReceiveMessage",
             function (content) {
-                appendMessage(content, false);
+                appendAdminMessage(
+                    content,
+                    false
+                );
             }
         );
 
-        async function startSignalR() {
-            try {
-                await connection.start();
-
-                console.log(
-                    "Admin đã kết nối SignalR"
+        connection.onreconnecting(
+            function () {
+                updateAdminConnection(
+                    "connecting"
                 );
-            } catch (error) {
-                console.error(
-                    "Không kết nối được SignalR:",
-                    error
-                );
-
-                setTimeout(startSignalR, 3000);
             }
+        );
+
+        connection.onreconnected(
+            function () {
+                updateAdminConnection(
+                    "connected"
+                );
+            }
+        );
+
+        connection.onclose(
+            function () {
+                updateAdminConnection(
+                    "disconnected"
+                );
+            }
+        );
+
+        try {
+            await connection.start();
+
+            updateAdminConnection(
+                "connected"
+            );
+        }
+        catch (error) {
+            console.error(
+                "SignalR chưa kết nối:",
+                error
+            );
+
+            updateAdminConnection(
+                "disconnected"
+            );
+
+            setTimeout(
+                startAdminSignalR,
+                3000
+            );
+        }
+    }
+
+    function appendAdminMessage(
+        content,
+        isMine
+    ) {
+        const emptyState =
+            document.getElementById(
+                "adminChatEmpty"
+            );
+
+        if (emptyState) {
+            emptyState.remove();
         }
 
-        startSignalR();
+        const wrapper =
+            document.createElement("div");
 
-        chatForm.addEventListener(
-            "submit",
-            async function (event) {
-                event.preventDefault();
+        wrapper.className =
+            "admin-support-message " +
+            (isMine ? "mine" : "customer");
 
-                const content =
-                    messageInput.value.trim();
-
-                if (!content) {
-                    return;
-                }
-
-                const token =
-                    chatForm.querySelector(
-                        'input[name="__RequestVerificationToken"]'
-                    ).value;
-
-                sendButton.disabled = true;
-
-                try {
-                    const response = await fetch(
-                        sendMessageUrl,
-                        {
-                            method: "POST",
-
-                            headers: {
-                                "Content-Type":
-                                    "application/json",
-
-                                "RequestVerificationToken":
-                                    token
-                            },
-
-                            body: JSON.stringify({
-                                receiverId: customerId,
-                                content: content
-                            })
-                        }
-                    );
-
-                    if (!response.ok) {
-                        const errorText =
-                            await response.text();
-
-                        console.error(
-                            "Gửi thất bại:",
-                            response.status,
-                            errorText
-                        );
-
-                        alert(
-                            "Không gửi được tin nhắn."
-                        );
-
-                        return;
-                    }
-
-                    // Chỉ hiện lên giao diện sau khi
-                    // database đã lưu thành công.
-                    appendMessage(content, true);
-
-                    messageInput.value = "";
-                    messageInput.focus();
-                } catch (error) {
-                    console.error(
-                        "Lỗi gửi tin nhắn:",
-                        error
-                    );
-
-                    alert(
-                        "Có lỗi khi gửi tin nhắn."
-                    );
-                } finally {
-                    sendButton.disabled = false;
-                }
-            }
-        );
-
-        function appendMessage(
-            content,
-            isMine
-        ) {
-            const container =
-                document.createElement("div");
-
-            container.className =
-                "mb-2 " +
-                (isMine
-                    ? "text-end"
-                    : "text-start");
-
-            const message =
+        if (!isMine) {
+            const avatar =
                 document.createElement("span");
 
-            message.className =
-                "badge " +
-                (isMine
-                    ? "bg-success"
-                    : "bg-secondary");
+            avatar.className =
+                "admin-support-message-avatar";
 
-            message.textContent = content;
+            avatar.textContent =
+                customerName
+                    ? customerName.charAt(0)
+                        .toUpperCase()
+                    : "K";
 
-            container.appendChild(message);
-            chatBox.appendChild(container);
-
-            chatBox.scrollTop =
-                chatBox.scrollHeight;
+            wrapper.appendChild(avatar);
         }
 
+        const messageContent =
+            document.createElement("div");
+
+        messageContent.className =
+            "admin-support-message-content";
+
+        const sender =
+            document.createElement("span");
+
+        sender.className =
+            "admin-support-sender";
+
+        sender.textContent =
+            isMine
+                ? "Bạn"
+                : customerName;
+
+        const bubble =
+            document.createElement("div");
+
+        bubble.className =
+            "admin-support-bubble";
+
+        bubble.textContent = content;
+
+        const time =
+            document.createElement("time");
+
+        time.textContent =
+            new Date().toLocaleTimeString(
+                "vi-VN",
+                {
+                    hour: "2-digit",
+                    minute: "2-digit"
+                }
+            );
+
+        messageContent.appendChild(sender);
+        messageContent.appendChild(bubble);
+        messageContent.appendChild(time);
+
+        wrapper.appendChild(messageContent);
+        chatBox.appendChild(wrapper);
+
+        scrollAdminChat();
+    }
+
+    function setAdminSending(isSending) {
+        sendButton.disabled = isSending;
+
+        sendButton.querySelector(
+            "span"
+        ).textContent =
+            isSending
+                ? "Đang gửi"
+                : "Gửi";
+    }
+
+    function showAdminChatError(content) {
+        const error =
+            document.createElement("div");
+
+        error.className =
+            "admin-support-error";
+
+        error.textContent = content;
+
+        chatBox.appendChild(error);
+        scrollAdminChat();
+
+        setTimeout(
+            function () {
+                error.remove();
+            },
+            3500
+        );
+    }
+
+    function updateAdminConnection(status) {
+        connectionStatus.className =
+            "admin-support-connection " +
+            status;
+
+        const text =
+            connectionStatus.querySelector(
+                "strong"
+            );
+
+        if (status === "connected") {
+            text.textContent =
+                "Đã kết nối";
+        }
+        else if (status === "disconnected") {
+            text.textContent =
+                "Mất kết nối";
+        }
+        else {
+            text.textContent =
+                "Đang kết nối";
+        }
+    }
+
+    function scrollAdminChat() {
         chatBox.scrollTop =
             chatBox.scrollHeight;
-    </script>
+    }
+
+    scrollAdminChat();
+    startAdminSignalR();
+</script>
 }

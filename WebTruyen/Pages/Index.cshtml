@@ -1,60 +1,400 @@
 ﻿@page
 @model WebTruyen.Pages.IndexModel
+
 @{
     ViewData["Title"] = "Trang chủ";
 }
 
-<div class="hero">
-    <h1>Mỗi trang sách,<br />một cuộc phiêu lưu.</h1>
-    <p>Kho truyện đa dạng thể loại — từ tiểu thuyết kinh điển đến ngôn tình, trinh thám. Đặt hàng dễ dàng, giao tận nơi.</p>
-    <a asp-page="/Books/Index" class="btn btn-success">Khám phá ngay</a>
+<div class="home-page">
 
-    <div class="hero-stack">
-        <div class="stack-card"></div>
-        <div class="stack-card"></div>
-        <div class="stack-card"></div>
-    </div>
-</div>
+    <!-- HERO -->
+    <section class="home-hero">
 
-<div class="section-heading">
-    <h2>Sách mới về</h2>
-    <a asp-page="/Books/Index" class="text-decoration-none">Xem tất cả &rarr;</a>
-</div>
+        <div class="home-hero-content">
 
-<div class="row">
-    @foreach (var book in Model.FeaturedBooks)
-    {
-        <div class="col-6 col-md-4 col-lg-3 mb-4">
-            <div class="book-card">
-                <a asp-page="/Books/Details" asp-route-id="@book.BookId">
-                    <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "/images/no-image.png" : book.ImageUrl)" alt="@book.Title" />
+            <span class="home-hero-eyebrow">
+                KHO SÁCH TRỰC TUYẾN
+            </span>
+
+            <h1>
+                Mỗi trang sách,<br />
+                một cuộc phiêu lưu.
+            </h1>
+
+            <p>
+                Khám phá những câu chuyện hấp dẫn,
+                từ tiểu thuyết kinh điển, trinh thám
+                đến manga và truyện tranh.
+            </p>
+
+            <div class="home-hero-actions">
+
+                <a asp-page="/Books/Index"
+                   class="home-hero-button">
+
+                    Khám phá kho sách
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="M5 12h14"></path>
+                        <path d="m13 6 6 6-6 6"></path>
+                    </svg>
+
                 </a>
-                <div class="card-body">
-                    <div class="card-title">@book.Title</div>
-                    <div class="card-author">@book.Author</div>
-                    <div class="card-price">@book.Price.ToString("N0") đ</div>
-                </div>
+
+                <span class="home-hero-note">
+                    Giao hàng tận nơi · Hỗ trợ trực tuyến
+                </span>
+
             </div>
+
         </div>
-    }
+
+        <div class="home-hero-books"
+             aria-hidden="true">
+
+            <div class="home-hero-book book-one">
+                <span>Trinh thám</span>
+            </div>
+
+            <div class="home-hero-book book-two">
+                <span>Văn học</span>
+            </div>
+
+            <div class="home-hero-book book-three">
+                <span>Truyện tranh</span>
+            </div>
+
+        </div>
+
+        <div class="home-hero-decoration"></div>
+
+    </section>
+    <!-- BANNER QUẢNG CÁO -->
+    <section class="home-promo-section">
+
+        <div id="homePromoCarousel"
+             class="carousel slide carousel-fade home-promo-carousel"
+             data-bs-ride="carousel"
+             data-bs-interval="5500"
+             data-bs-pause="hover">
+
+            <!-- Chấm chuyển banner -->
+            <div class="carousel-indicators">
+
+                <button type="button"
+                        data-bs-target="#homePromoCarousel"
+                        data-bs-slide-to="0"
+                        class="active"
+                        aria-current="true"
+                        aria-label="Banner 1">
+                </button>
+
+                <button type="button"
+                        data-bs-target="#homePromoCarousel"
+                        data-bs-slide-to="1"
+                        aria-label="Banner 2">
+                </button>
+
+                <button type="button"
+                        data-bs-target="#homePromoCarousel"
+                        data-bs-slide-to="2"
+                        aria-label="Banner 3">
+                </button>
+
+            </div>
+
+            <!-- Danh sách banner -->
+            <div class="carousel-inner">
+
+                <div class="carousel-item active">
+
+                    <a asp-page="/Books/Index"
+                       class="home-promo-link">
+
+                        <img src="~/images/banners/banner-1.png"
+                             class="d-block w-100"
+                             alt="Khám phá kho truyện WebTruyen"
+                             loading="eager" />
+
+                    </a>
+
+                </div>
+
+                <div class="carousel-item">
+
+                    <a asp-page="/Books/Index"
+                       class="home-promo-link">
+
+                        <img src="~/images/banners/banner-2.png"
+                             class="d-block w-100"
+                             alt="Mỗi trang sách một cuộc phiêu lưu"
+                             loading="lazy" />
+
+                    </a>
+
+                </div>
+
+                <div class="carousel-item">
+
+                    <a asp-page="/Books/Index"
+                       class="home-promo-link">
+
+                        <img src="~/images/banners/banner-3.png"
+                             class="d-block w-100"
+                             alt="Khám phá thế giới sách WebTruyen"
+                             loading="lazy" />
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <!-- Nút lùi -->
+            <button class="carousel-control-prev"
+                    type="button"
+                    data-bs-target="#homePromoCarousel"
+                    data-bs-slide="prev">
+
+                <span class="home-promo-control">
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="m15 18-6-6 6-6"></path>
+                    </svg>
+                </span>
+
+                <span class="visually-hidden">
+                    Banner trước
+                </span>
+
+            </button>
+
+            <!-- Nút tới -->
+            <button class="carousel-control-next"
+                    type="button"
+                    data-bs-target="#homePromoCarousel"
+                    data-bs-slide="next">
+
+                <span class="home-promo-control">
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="m9 18 6-6-6-6"></path>
+                    </svg>
+                </span>
+
+                <span class="visually-hidden">
+                    Banner tiếp theo
+                </span>
+
+            </button>
+
+        </div>
+
+    </section>
+
+    <!-- SÁCH MỚI -->
+    <section class="home-section">
+
+        <header class="home-section-header">
+
+            <span>VỪA LÊN KỆ</span>
+
+            <h2>Sách mới về</h2>
+
+            <p>
+                Những cuốn sách mới nhất vừa được cập nhật
+                tại METruyen.
+            </p>
+
+        </header>
+
+        @if (Model.FeaturedBooks.Any())
+        {
+            <div class="home-books-grid">
+
+                @foreach (var book in Model.FeaturedBooks)
+                {
+                    <article class="home-book-card">
+
+                        <a asp-page="/Books/Details"
+                           asp-route-id="@book.BookId"
+                           class="home-book-cover">
+
+                            <img src="@(string.IsNullOrWhiteSpace(book.ImageUrl)
+                                                                         ? "/images/no-image.png"
+                                                                         : book.ImageUrl)"
+                         alt="@book.Title" />
+
+                            <span class="home-book-view">
+                                Xem sách
+                            </span>
+
+                        </a>
+
+                        <div class="home-book-content">
+
+                    @if (book.Category != null)
+                            {
+                                <span class="home-book-category">
+                                    @book.Category.CategoryName
+                                </span>
+                            }
+
+                            <h3>
+                                <a asp-page="/Books/Details"
+                                   asp-route-id="@book.BookId">
+
+                                    @book.Title
+
+                                </a>
+                            </h3>
+
+                            <p class="home-book-author">
+                                @book.Author
+                            </p>
+
+                            <div class="home-book-bottom">
+
+                                <strong>
+                                    @book.Price.ToString("N0") đ
+                                </strong>
+
+                                <a asp-page="/Books/Details"
+                                   asp-route-id="@book.BookId"
+                                   aria-label="Xem @book.Title">
+
+                                    <svg viewBox="0 0 24 24"
+                                         aria-hidden="true">
+                                        <path d="M5 12h14"></path>
+                                        <path d="m13 6 6 6-6 6"></path>
+                                    </svg>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+                }
+
+            </div>
+
+            <!-- NÚT XEM TẤT CẢ NẰM DƯỚI -->
+            <div class="home-section-action">
+
+                <a asp-page="/Books/Index"
+                   class="home-view-all-button">
+
+                    Xem tất cả sách
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <path d="M5 12h14"></path>
+                        <path d="m13 6 6 6-6 6"></path>
+                    </svg>
+
+                </a>
+
+            </div>
+        }
+        else
+        {
+            <div class="home-books-empty">
+                Chưa có sách mới để hiển thị.
+            </div>
+        }
+
+    </section>
+
+    <!-- GỢI Ý SÁCH -->
+    <section class="home-discovery-section">
+
+        <header class="home-section-header">
+
+            <span>KHÁM PHÁ THÊM</span>
+
+            <h2>Gợi ý dành cho bạn</h2>
+
+            <p>
+                Theo dõi những cuốn sách đang được quan tâm
+                và vừa được cập nhật.
+            </p>
+
+        </header>
+
+        <div class="home-discovery-grid">
+
+            <vc:best-selling-books count="4">
+            </vc:best-selling-books>
+
+            <vc:new-updated-books count="4">
+            </vc:new-updated-books>
+
+        </div>
+
+    </section>
+
+    <!-- LỢI ÍCH -->
+    <section class="home-benefits">
+
+        <article>
+
+            <span class="home-benefit-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M3 5h7a3 3 0 0 1 3 3v12a3 3 0 0 0-3-3H3Z"></path>
+                    <path d="M21 5h-7a3 3 0 0 0-3 3v12a3 3 0 0 1 3-3h7Z"></path>
+                </svg>
+            </span>
+
+            <div>
+                <strong>Kho sách đa dạng</strong>
+                <span>Nhiều thể loại để lựa chọn</span>
+            </div>
+
+        </article>
+
+        <article>
+
+            <span class="home-benefit-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M3 6h12v10H3z"></path>
+                    <path d="M15 9h3l3 3v4h-6z"></path>
+                    <circle cx="7"
+                            cy="18"
+                            r="2"></circle>
+                    <circle cx="18"
+                            cy="18"
+                            r="2"></circle>
+                </svg>
+            </span>
+
+            <div>
+                <strong>Giao hàng tận nơi</strong>
+                <span>Theo dõi trạng thái đơn hàng</span>
+            </div>
+
+        </article>
+
+        <article>
+
+            <span class="home-benefit-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"></path>
+                </svg>
+            </span>
+
+            <div>
+                <strong>Hỗ trợ trực tuyến</strong>
+                <span>Liên hệ Admin ngay trên website</span>
+            </div>
+
+        </article>
+
+    </section>
+
 </div>
-<hr class="my-5" />
-
-<div class="row g-4 mb-5">
-
-    <div class="col-lg-6">
-        <vc:best-selling-books count="4">
-        </vc:best-selling-books>
-    </div>
-
-    <div class="col-lg-6">
-        <vc:new-updated-books count="4">
-        </vc:new-updated-books>
-    </div>
-
-</div>
-
-@if (!Model.FeaturedBooks.Any())
-{
-    <p>Chưa có sách nào để hiển thị.</p>
-}

@@ -27,6 +27,18 @@ else
             <p><strong>Phương thức thanh toán:</strong> @Model.MyOrder.PaymentMethod</p>
             <p><strong>Trạng thái thanh toán:</strong> @Model.MyOrder.PaymentStatus</p>
             <p>
+                @if (Model.MyOrder.PaymentMethod == "Chuyển khoản" &&
+                            Model.MyOrder.PaymentStatus != "Đã thanh toán")
+                {
+                    <div class="mt-3">
+                        <a asp-page="/Cart/BankTransfer"
+                           asp-route-id="@Model.MyOrder.OrderId"
+                           class="btn btn-outline-primary">
+
+                            Xem lại thông tin chuyển khoản
+                        </a>
+                    </div>
+                }
                 <strong>Trạng thái đơn hàng:</strong>
                 @{
                     var badgeClass = Model.MyOrder.Status switch

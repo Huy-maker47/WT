@@ -1,117 +1,525 @@
 ﻿@page "{id:int}"
 @model WebTruyen.Pages.Books.DetailsModel
+
 @{
     ViewData["Title"] = Model.Book?.Title ?? "Chi tiết sách";
 }
 
 @if (Model.Book == null)
 {
-    <p>Không tìm thấy sách.</p>
+    <div class="book-not-found">
+        <h2>Không tìm thấy sách</h2>
+        <p>Cuốn sách này không tồn tại hoặc đã ngừng bán.</p>
+
+        <a asp-page="/Books/Index"
+           class="btn btn-primary">
+            Quay lại kho sách
+        </a>
+    </div>
 }
 else
 {
-    <div class="row">
-        <div class="col-md-4">
-            <img src="@(string.IsNullOrEmpty(Model.Book.ImageUrl) ? "/images/no-image.png" : Model.Book.ImageUrl)"
-                 class="img-fluid" />
-        </div>
-        <div class="col-md-8">
-            <h2>@Model.Book.Title</h2>
-            <p><strong>Tác giả:</strong> <a asp-page="/Books/Index" asp-route-authorName="@Model.Book.Author">@Model.Book.Author</a></p>
-            <p><strong>Danh mục:</strong> @Model.Book.Category?.CategoryName</p>
-            <p><strong>Giá:</strong> <span class="card-price">@Model.Book.Price.ToString("N0") đ</span></p>
-            <p><strong>Còn lại:</strong> @Model.Book.Stock cuốn</p>
-            <p>@Model.Book.Description</p>
+    var stock = Model.Book.Stock ?? 0;
+    var hasStock = stock > 0;
 
-            <form method="post" asp-page-handler="AddToCart">
-                <input type="hidden" name="bookId" value="@Model.Book.BookId" />
-                <div class="mb-3" style="max-width:150px;">
-                    <label>Số lượng</label>
-                    <input type="number" name="quantity" value="1" min="1" max="@Model.Book.Stock" class="form-control" />
+    <div class="book-detail-page">
+
+        <!-- Breadcrumb -->
+        <nav class="book-breadcrumb"
+             aria-label="breadcrumb">
+
+            <a asp-page="/Index">
+                Trang chủ
+            </a>
+
+            <span>/</span>
+
+            <a asp-page="/Books/Index">
+                Kho sách
+            </a>
+
+            <span>/</span>
+
+            <span>@Model.Book.Title</span>
+        </nav>
+
+        <!-- Thông tin chính -->
+        <section class="book-detail-hero">
+
+            <!-- Ảnh sách -->
+            <div class="book-detail-gallery">
+
+                <div class="book-detail-image-wrap">
+
+                    <img src="@(string.IsNullOrWhiteSpace(Model.Book.ImageUrl)
+                                                         ? "/images/no-image.png"
+                                                         : Model.Book.ImageUrl)"
+                     alt="@Model.Book.Title"
+                     class="book-detail-image" />
+
+                @if (hasStock)
+                    {
+                        <span class="book-stock-badge in-stock">
+                            Còn hàng
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="book-stock-badge out-stock">
+                            Hết hàng
+                        </span>
+                    }
+
                 </div>
-                <button type="submit" class="btn btn-success">Thêm vào giỏ hàng</button>
-            </form>
 
-            <form method="post" asp-page-handler="ToggleFavorite" class="mt-2">
-                <input type="hidden" name="id" value="@Model.Book.BookId" />
-                <button type="submit" class="btn btn-outline-danger btn-sm">
-                    @(Model.IsFavorite ? "♥ Bỏ yêu thích" : "♡ Thêm vào yêu thích")
-                </button>
-            </form>
-        </div>
-    </div>
+                <div class="book-image-note">
+                    Hình ảnh sản phẩm chỉ mang tính chất minh họa
+                </div>
+            </div>
 
-    <hr class="my-4" />
-    @if (Model.RelatedBooks.Any())
-    {
-        <h4 class="mt-4">Sách cùng danh mục</h4>
-        <div class="row">
-            @foreach (var rb in Model.RelatedBooks)
-            {
-                <div class="col-6 col-md-3 mb-3">
-                    <div class="book-card">
-                        <a asp-page="Details" asp-route-id="@rb.BookId">
-                            <img src="@(string.IsNullOrEmpty(rb.ImageUrl) ? "/images/no-image.png" : rb.ImageUrl)" alt="@rb.Title" />
-                        </a>
-                        <div class="card-body">
-                            <div class="card-title">@rb.Title</div>
-                            <div class="card-price">@rb.Price.ToString("N0") đ</div>
-                        </div>
+            <!-- Nội dung -->
+            <div class="book-detail-info">
+
+                <div class="book-category-label">
+                    @Model.Book.Category?.CategoryName
+                </div>
+
+                <h1 class="book-detail-title">
+                    @Model.Book.Title
+                </h1>
+
+                <div class="book-detail-author">
+                    Tác giả:
+
+                    <a asp-page="/Books/Index"
+                       asp-route-authorName="@Model.Book.Author">
+                        @Model.Book.Author
+                    </a>
+                </div>
+
+                <!-- Đánh giá -->
+                <div class="book-rating-summary">
+
+                    @if (Model.Reviews.Any())
+                    {
+                        <span class="book-rating-stars">
+                            ★★★★★
+                        </span>
+
+                        <strong>
+                            @Model.AverageRating.ToString("0.0")
+                        </strong>
+
+                        <span>
+                            (@Model.Reviews.Count đánh giá)
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="book-rating-stars empty">
+                            ☆☆☆☆☆
+                        </span>
+
+                        <span>Chưa có đánh giá</span>
+                    }
+
+            </div>
+
+            <div class="book-detail-divider"></div>
+
+            <!-- Giá -->
+            <div class="book-price-section">
+                <span class="book-price-label">
+                    Giá bán
+                </span>
+
+                <div class="book-detail-price">
+                    @Model.Book.Price.ToString("N0") đ
+                </div>
+            </div>
+
+            <!-- Thông tin nhanh -->
+            <div class="book-meta-grid">
+
+                <div class="book-meta-item">
+                    <span>Thể loại</span>
+                    <strong>
+                        @Model.Book.Category?.CategoryName
+                    </strong>
+                </div>
+
+                <div class="book-meta-item">
+                    <span>Tình trạng</span>
+
+                    <strong class="@(hasStock ? "text-success" : "text-danger")">
+                        @(hasStock ? "Đang bán" : "Hết hàng")
+                    </strong>
+                </div>
+
+                <div class="book-meta-item">
+                    <span>Số lượng còn lại</span>
+                    <strong>@stock cuốn</strong>
+                </div>
+
+                <div class="book-meta-item">
+                    <span>Mã sách</span>
+                    <strong>#@Model.Book.BookId</strong>
+                </div>
+
+            </div>
+
+            <!-- Mua hàng -->
+            <div class="book-purchase-box">
+
+                <form method="post"
+                      asp-page="/Cart/Index"
+                      asp-page-handler="AddToCart"
+                      class="book-cart-form">
+
+                    <input type="hidden"
+                           name="bookId"
+                           value="@Model.Book.BookId" />
+
+                    <div class="book-quantity-field">
+                        <label for="bookQuantity">
+                            Số lượng
+                        </label>
+
+                        <input id="bookQuantity"
+                               type="number"
+                               name="quantity"
+                               value="1"
+                               min="1"
+                               max="@stock"
+                               class="form-control"
+                               disabled="@(!hasStock)" />
                     </div>
+
+                    <button type="submit"
+                            class="btn book-add-cart"
+                            disabled="@(!hasStock)">
+
+                        <span>🛒</span>
+
+                        @(hasStock
+                                                ? "Thêm vào giỏ hàng"
+                                                : "Sản phẩm đã hết")
+                                                                </button>
+
+                </form>
+
+                <form method="post"
+                      asp-page-handler="ToggleFavorite"
+                      class="book-favorite-form">
+
+                    <input type="hidden"
+                           name="id"
+                           value="@Model.Book.BookId" />
+
+                    <button type="submit"
+                            class="btn book-favorite-button
+                                       @(Model.IsFavorite ? "is-favorite" : "")">
+
+                        @(Model.IsFavorite
+                                                ? "♥ Đã thêm yêu thích"
+                                                : "♡ Thêm vào yêu thích")
+                    </button>
+
+                    </form>
+
+                </div>
+
+                <!-- Cam kết -->
+                <div class="book-service-list">
+
+                    <div>
+                        <span>✓</span>
+                        Sản phẩm chính hãng
+                    </div>
+
+                    <div>
+                        <span>✓</span>
+                        Đóng gói cẩn thận
+                    </div>
+
+                    <div>
+                        <span>✓</span>
+                        Theo dõi trạng thái đơn hàng
+                    </div>
+
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Mô tả do Admin nhập -->
+        <section class="book-detail-section">
+
+            <div class="book-section-heading">
+                <span class="book-section-icon">📖</span>
+
+                <div>
+                    <h2>Mô tả sách</h2>
+                    <p>Thông tin chi tiết về nội dung cuốn sách</p>
+                </div>
+            </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Book.Description))
+            {
+                <div class="book-description-text">
+                    @Model.Book.Description
                 </div>
             }
-        </div>
-    }
-    <h4>
-        Đánh giá (@Model.Reviews.Count)
-        @if (Model.Reviews.Any())
-        {
-            <span class="text-warning">— @Model.AverageRating.ToString("0.0") ★</span>
-        }
-    </h4>
+            else
+            {
+                <div class="book-empty-content">
+                    Sách này hiện chưa có phần mô tả.
+                </div>
+            }
 
-    @if (User.Identity != null && User.Identity.IsAuthenticated)
-    {
-        <form method="post" asp-page-handler="AddReview" class="mb-4" style="max-width:500px;">
-            <input type="hidden" name="id" value="@Model.Book.BookId" />
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="mb-2">
-                <label>Chấm điểm</label>
-                <select asp-for="RatingInput" class="form-select" style="max-width:150px;">
-                    <option value="5">5 sao</option>
-                    <option value="4">4 sao</option>
-                    <option value="3">3 sao</option>
-                    <option value="2">2 sao</option>
-                    <option value="1">1 sao</option>
-                </select>
-            </div>
-            <div class="mb-2">
-                <label>Nhận xét</label>
-                <textarea asp-for="CommentInput" class="form-control" rows="3"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary btn-sm">Gửi đánh giá</button>
-        </form>
-    }
-    else
-    {
-        <p><a asp-page="/Account/Login">Đăng nhập</a> để viết đánh giá.</p>
-    }
+        </section>
 
-    @if (!Model.Reviews.Any())
-    {
-        <p class="text-muted">Chưa có đánh giá nào.</p>
-    }
-    else
-    {
-        @foreach (var review in Model.Reviews)
+        <!-- Sách cùng danh mục -->
+        @if (Model.RelatedBooks.Any())
         {
-            <div class="border-bottom pb-2 mb-2">
-                <strong>@review.User.FullName</strong>
-                <span class="text-warning">@(new string('★', review.Rating ?? 0))@(new string('☆', 5 - (review.Rating ?? 0)))</span>
-                <br />
-                <small class="text-muted">@review.ReviewDate?.ToString("dd/MM/yyyy")</small>
-                <p class="mb-0">@review.Comment</p>
-            </div>
+            <section class="book-detail-section">
+
+                <div class="book-section-heading
+                                    book-section-heading-row">
+
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="book-section-icon">📚</span>
+
+                        <div>
+                            <h2>Sách cùng danh mục</h2>
+                            <p>
+                                Một số đầu sách có thể bạn quan tâm
+                            </p>
+                        </div>
+                    </div>
+
+                    <a asp-page="/Books/Index"
+                       asp-route-categoryId="@Model.Book.CategoryId"
+                       class="book-section-link">
+
+                        Xem tất cả →
+                    </a>
+
+                </div>
+
+                <div class="row g-4">
+
+                    @foreach (var relatedBook in Model.RelatedBooks)
+                    {
+                        <div class="col-6 col-md-3">
+
+                            <article class="related-book-card">
+
+                                <a asp-page="Details"
+                                   asp-route-id="@relatedBook.BookId"
+                                   class="related-book-image">
+
+                                    <img src="@(string.IsNullOrWhiteSpace(relatedBook.ImageUrl)
+                                                                                         ? "/images/no-image.png"
+                                                                                         : relatedBook.ImageUrl)"
+                             alt="@relatedBook.Title" />
+                    </a>
+
+                                <div class="related-book-body">
+
+                                    <h3>
+                                        <a asp-page="Details"
+                                           asp-route-id="@relatedBook.BookId">
+
+                                            @relatedBook.Title
+                                        </a>
+                                    </h3>
+
+                                    <p>@relatedBook.Author</p>
+
+                                    <strong>
+                                        @relatedBook.Price.ToString("N0") đ
+                                    </strong>
+
+                                </div>
+
+                            </article>
+
+                        </div>
+                        }
+
+                </div>
+
+            </section>
         }
-    }
+
+        <!-- Đánh giá -->
+        <section class="book-detail-section">
+
+            <div class="book-section-heading">
+                <span class="book-section-icon">★</span>
+
+                <div>
+                    <h2>
+                        Đánh giá sản phẩm
+                    </h2>
+
+                    <p>
+                        @Model.Reviews.Count nhận xét từ khách hàng
+                    </p>
+                </div>
+            </div>
+
+            <div class="review-layout">
+
+                <!-- Tổng quan đánh giá -->
+                <div class="review-summary-card">
+
+                    <div class="review-average">
+                        @Model.AverageRating.ToString("0.0")
+                    </div>
+
+                    <div class="review-summary-stars">
+                        ★★★★★
+                    </div>
+
+                    <p>
+                        Dựa trên @Model.Reviews.Count đánh giá
+                    </p>
+
+                </div>
+
+                <!-- Form -->
+                <div class="review-form-card">
+
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <h3>Viết đánh giá của bạn</h3>
+
+                        <form method="post"
+                              asp-page-handler="AddReview">
+
+                            <input type="hidden"
+                                   name="id"
+                                   value="@Model.Book.BookId" />
+
+                            <div asp-validation-summary="All"
+                                 class="text-danger mb-3">
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="RatingInput"
+                                       class="form-label">
+                                    Chấm điểm
+                                </label>
+
+                                <select asp-for="RatingInput"
+                                        class="form-select review-rating-select">
+
+                                    <option value="5">5 sao — Rất tốt</option>
+                                    <option value="4">4 sao — Tốt</option>
+                                    <option value="3">3 sao — Bình thường</option>
+                                    <option value="2">2 sao — Chưa tốt</option>
+                                    <option value="1">1 sao — Không hài lòng</option>
+
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="CommentInput"
+                                       class="form-label">
+                                    Nhận xét
+                                </label>
+
+                                <textarea asp-for="CommentInput"
+                                          class="form-control"
+                                          rows="4"
+                                          placeholder="Chia sẻ cảm nhận của bạn về cuốn sách...">
+                                        </textarea>
+                            </div>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+                                Gửi đánh giá
+                            </button>
+
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="review-login-message">
+                            <h3>Chia sẻ cảm nhận của bạn</h3>
+
+                            <p>
+                                Bạn cần đăng nhập để viết đánh giá.
+                            </p>
+
+                            <a asp-page="/Account/Login"
+                               class="btn btn-primary">
+                                Đăng nhập
+                            </a>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <!-- Danh sách nhận xét -->
+            <div class="review-list">
+
+                @if (!Model.Reviews.Any())
+                {
+                    <div class="book-empty-content">
+                        Chưa có đánh giá nào cho cuốn sách này.
+                    </div>
+                }
+                else
+                {
+                    @foreach (var review in Model.Reviews)
+                    {
+                        <article class="review-item">
+
+                            <div class="review-avatar">
+                                @(string.IsNullOrWhiteSpace(review.User.FullName)
+                                                    ? "U"
+                                                    : review.User.FullName.Substring(0, 1).ToUpper())
+                </div>
+
+                            <div class="review-content">
+
+                                <div class="review-header">
+
+                                    <div>
+                                        <strong>
+                                            @review.User.FullName
+                                        </strong>
+
+                                        <div class="review-stars">
+                                            @(new string('★', review.Rating ?? 0))
+                                            @(new string('☆', 5 - (review.Rating ?? 0)))
+                                        </div>
+                                    </div>
+
+                                    <time>
+                                        @review.ReviewDate?.ToString("dd/MM/yyyy")
+                                    </time>
+
+                                </div>
+
+                    @if (!string.IsNullOrWhiteSpace(review.Comment))
+                                {
+                                    <p>@review.Comment</p>
+                                }
+
+                            </div>
+
+                        </article>
+                    }
+                }
+
+            </div>
+
+        </section>
+
+    </div>
 }

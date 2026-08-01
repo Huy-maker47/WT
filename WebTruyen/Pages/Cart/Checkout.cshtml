@@ -1,53 +1,350 @@
 ﻿@page
 @model WebTruyen.Pages.Cart.CheckoutModel
+
 @{
     ViewData["Title"] = "Thanh toán";
+
+    var totalQuantity = Model.CartData.CartItems
+        .Sum(item => item.Quantity);
+
+    var totalPrice = Model.CartData.CartItems
+        .Sum(item => item.Quantity * item.Book.Price);
 }
 
-<h2>Thông tin đặt hàng</h2>
+<div class="checkout-page">
 
-<div class="row">
-    <div class="col-md-6">
-        <form method="post">
-            <div asp-validation-summary="All" class="text-danger"></div>
-            <div class="mb-3">
-                <label>Tên người nhận</label>
-                <input asp-for="ReceiverName" class="form-control" required />
-            </div>
-            <div class="mb-3">
-                <label>Số điện thoại</label>
-                <input asp-for="ReceiverPhone" class="form-control" required />
-            </div>
-            <div class="mb-3">
-                <label>Địa chỉ giao hàng</label>
-                <textarea asp-for="ShippingAddress" class="form-control" required></textarea>
-            </div>
-            <div class="mb-3">
-                <label>Phương thức thanh toán</label>
-                <select asp-for="PaymentMethod" class="form-select">
-                    <option value="COD">Thanh toán khi nhận hàng (COD)</option>
-                    <option value="Chuyển khoản">Chuyển khoản</option>
-                </select>
-            </div>
-            <div class="mb-3">
-                <label>Ghi chú</label>
-                <textarea asp-for="Note" class="form-control"></textarea>
-            </div>
-            <button type="submit" class="btn btn-success">Đặt hàng</button>
-        </form>
+    <!-- Thanh tiến trình -->
+    <div class="checkout-steps">
+        <div class="checkout-step completed">
+            <span>1</span>
+            <strong>Giỏ hàng</strong>
+        </div>
+
+        <div class="checkout-step-line completed"></div>
+
+        <div class="checkout-step active">
+            <span>2</span>
+            <strong>Thanh toán</strong>
+        </div>
+
+        <div class="checkout-step-line"></div>
+
+        <div class="checkout-step">
+            <span>3</span>
+            <strong>Hoàn tất</strong>
+        </div>
     </div>
 
-    <div class="col-md-6">
-        <h5>Đơn hàng của bạn</h5>
-        <ul class="list-group">
-            @foreach (var item in Model.CartData.CartItems)
-            {
-                <li class="list-group-item d-flex justify-content-between">
-                    @item.Book.Title x @item.Quantity
-                    <span>@((item.Quantity * item.Book.Price).ToString("N0")) đ</span>
-                </li>
-            }
-        </ul>
-        <h5 class="mt-3">Tổng: @Model.CartData.CartItems.Sum(i => i.Quantity * i.Book.Price).ToString("N0") đ</h5>
+    <div class="checkout-heading">
+        <div>
+            <span class="checkout-label">METruyen</span>
+
+            <h1>Thông tin đặt hàng</h1>
+
+            <p>
+                Vui lòng kiểm tra thông tin nhận hàng trước khi xác nhận.
+            </p>
+        </div>
+
+        <a asp-page="/Cart/Index"
+           class="checkout-back-link">
+            ← Quay lại giỏ hàng
+        </a>
     </div>
+
+    <form method="post">
+
+        <div asp-validation-summary="ModelOnly"
+             class="alert alert-danger checkout-validation">
+        </div>
+
+        <div class="checkout-layout">
+
+            <!-- Thông tin nhận hàng -->
+            <div class="checkout-left">
+
+                <section class="checkout-card">
+
+                    <div class="checkout-card-heading">
+                        <span class="checkout-card-icon">👤</span>
+
+                        <div>
+                            <h2>Thông tin người nhận</h2>
+                            <p>Thông tin dùng để giao hàng</p>
+                        </div>
+                    </div>
+
+                    <div class="checkout-form-grid">
+
+                        <div class="checkout-field">
+                            <label asp-for="ReceiverName">
+                                Tên người nhận
+                                <span>*</span>
+                            </label>
+
+                            <input asp-for="ReceiverName"
+                                   class="form-control checkout-input"
+                                   placeholder="Nhập họ và tên người nhận"
+                                   autocomplete="name" />
+
+                            <span asp-validation-for="ReceiverName"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                        <div class="checkout-field">
+                            <label asp-for="ReceiverPhone">
+                                Số điện thoại
+                                <span>*</span>
+                            </label>
+
+                            <input asp-for="ReceiverPhone"
+                                   type="tel"
+                                   class="form-control checkout-input"
+                                   placeholder="Ví dụ: 0901234567"
+                                   autocomplete="tel"
+                                   inputmode="tel" />
+
+                            <span asp-validation-for="ReceiverPhone"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                        <div class="checkout-field checkout-field-full">
+                            <label asp-for="ShippingAddress">
+                                Địa chỉ giao hàng
+                                <span>*</span>
+                            </label>
+
+                            <textarea asp-for="ShippingAddress"
+                                      class="form-control checkout-input checkout-textarea"
+                                      rows="4"
+                                      placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                                      autocomplete="street-address">
+                            </textarea>
+
+                            <span asp-validation-for="ShippingAddress"
+                                  class="text-danger small">
+                            </span>
+                        </div>
+
+                    </div>
+
+                </section>
+
+                <!-- Phương thức thanh toán -->
+                <section class="checkout-card">
+
+                    <div class="checkout-card-heading">
+                        <span class="checkout-card-icon">💳</span>
+
+                        <div>
+                            <h2>Phương thức thanh toán</h2>
+                            <p>Chọn phương thức phù hợp với bạn</p>
+                        </div>
+                    </div>
+
+                    <div class="checkout-payment-options">
+
+                        <label class="checkout-payment-option"
+                               for="paymentCod">
+
+                            <input asp-for="PaymentMethod"
+                                   id="paymentCod"
+                                   type="radio"
+                                   value="COD" />
+
+                            <span class="checkout-payment-radio"></span>
+
+                            <span class="checkout-payment-icon cod-icon">
+                                COD
+                            </span>
+
+                            <span class="checkout-payment-content">
+                                <strong>Thanh toán khi nhận hàng</strong>
+
+                                <small>
+                                    Thanh toán trực tiếp khi đơn hàng được giao
+                                </small>
+                            </span>
+
+                            <span class="checkout-payment-code">
+                                COD
+                            </span>
+                        </label>
+
+                        <label class="checkout-payment-option"
+                               for="paymentTransfer">
+
+                            <input asp-for="PaymentMethod"
+                                   id="paymentTransfer"
+                                   type="radio"
+                                   value="Chuyển khoản" />
+
+                            <span class="checkout-payment-radio"></span>
+
+                            <span class="checkout-payment-icon">🏦</span>
+
+                            <span class="checkout-payment-content">
+                                <strong>Chuyển khoản ngân hàng</strong>
+
+                                <small>
+                                    Thanh toán bằng hình thức chuyển khoản
+                                </small>
+                            </span>
+                        </label>
+
+                    </div>
+
+                    <span asp-validation-for="PaymentMethod"
+                          class="text-danger small">
+                    </span>
+
+                    <div class="checkout-field checkout-note-field">
+                        <label asp-for="Note">
+                            Ghi chú
+                            <small>Không bắt buộc</small>
+                        </label>
+
+                        <textarea asp-for="Note"
+                                  class="form-control checkout-input checkout-textarea"
+                                  rows="3"
+                                  placeholder="Ví dụ: Giao hàng trong giờ hành chính...">
+                        </textarea>
+
+                        <span asp-validation-for="Note"
+                              class="text-danger small">
+                        </span>
+                    </div>
+
+                </section>
+
+            </div>
+
+            <!-- Tóm tắt đơn hàng -->
+            <aside class="checkout-summary">
+
+                <div class="checkout-summary-heading">
+                    <div>
+                        <h2>Đơn hàng của bạn</h2>
+
+                        <p>
+                            @totalQuantity sản phẩm
+                        </p>
+                    </div>
+
+                    <a asp-page="/Cart/Index">
+                        Chỉnh sửa
+                    </a>
+                </div>
+
+                <div class="checkout-product-list">
+
+                    @foreach (var item in Model.CartData.CartItems)
+                    {
+                        var lineTotal =
+                        item.Quantity * item.Book.Price;
+
+                        <article class="checkout-product">
+
+                            <a asp-page="/Books/Details"
+                               asp-route-id="@item.Book.BookId"
+                               class="checkout-product-image">
+
+                                <img src="@(string.IsNullOrWhiteSpace(item.Book.ImageUrl)
+                                                                                 ? "/images/no-image.png"
+                                                                                 : item.Book.ImageUrl)"
+                                 alt="@item.Book.Title" />
+
+                                <span>@item.Quantity</span>
+                            </a>
+
+                            <div class="checkout-product-info">
+                                <a asp-page="/Books/Details"
+                                   asp-route-id="@item.Book.BookId">
+
+                                    @item.Book.Title
+                                </a>
+
+                                <small>
+                                    @item.Book.Author
+                                </small>
+
+                                <span>
+                                    @item.Book.Price.ToString("N0") đ
+                                    × @item.Quantity
+                                </span>
+                            </div>
+
+                            <strong class="checkout-product-total">
+                                @lineTotal.ToString("N0") đ
+                            </strong>
+
+                        </article>
+                                        }
+
+                </div>
+
+                <div class="checkout-summary-divider"></div>
+
+                <div class="checkout-summary-row">
+                    <span>Tạm tính</span>
+
+                    <strong>
+                        @totalPrice.ToString("N0") đ
+                    </strong>
+                </div>
+
+                <div class="checkout-summary-row">
+                    <span>Phí vận chuyển</span>
+
+                    <strong class="checkout-free-shipping">
+                        Miễn phí
+                    </strong>
+                </div>
+
+                <div class="checkout-summary-divider"></div>
+
+                <div class="checkout-summary-total">
+                    <div>
+                        <span>Tổng thanh toán</span>
+                        <small>Đã bao gồm các khoản phí</small>
+                    </div>
+
+                    <strong>
+                        @totalPrice.ToString("N0") đ
+                    </strong>
+                </div>
+
+                <button type="submit"
+                        class="btn checkout-submit-button">
+
+                    <span>🔒</span>
+                    Xác nhận đặt hàng
+                </button>
+
+                <div class="checkout-security">
+
+                    <div>
+                        <span>✓</span>
+                        Thông tin của bạn được bảo mật
+                    </div>
+
+                    <div>
+                        <span>✓</span>
+                        Kiểm tra đơn hàng trước khi xác nhận
+                    </div>
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </form>
+
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

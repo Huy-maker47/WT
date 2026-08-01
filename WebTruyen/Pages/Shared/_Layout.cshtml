@@ -190,7 +190,16 @@
                                         <a class="dropdown-item"
                                            asp-page="/Chat/Index">
 
-                                            <span class="dropdown-symbol">💬</span>
+                                            <span class="dropdown-symbol">
+                                                <svg class="dropdown-line-icon"
+                                                     viewBox="0 0 24 24"
+                                                     aria-hidden="true">
+                                                    <path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"></path>
+                                                    <path d="M8 12h.01"></path>
+                                                    <path d="M12 12h.01"></path>
+                                                    <path d="M16 12h.01"></path>
+                                                </svg>
+                                            </span>
 
                                             <span>
                                                 <strong>Hỗ trợ trực tuyến</strong>
@@ -240,11 +249,73 @@
                                 </li>
                             }
 
-                        <!-- Chuông thông báo -->
-                        <li class="nav-item notification-slot">
-                            <component type="typeof(NotificationBell)"
-                                       render-mode="ServerPrerendered"
-                                       param-UnreadCount="@unreadNotificationCount" />
+                            <!-- Chuông thông báo -->
+                            <li class="nav-item dropdown notification-slot">
+
+                                <button type="button"
+                                        class="btn position-relative"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                        aria-label="Thông báo">
+
+                                    <span aria-hidden="true">🔔</span>
+
+                                    @if (unreadNotificationCount > 0)
+                                    {
+                                        <span class="position-absolute top-0 start-100
+                                 translate-middle badge rounded-pill bg-danger">
+
+                                            @unreadNotificationCount
+
+                                            <span class="visually-hidden">
+                                                thông báo chưa đọc
+                                            </span>
+                                        </span>
+                                    }
+                                </button>
+
+                                <div class="dropdown-menu dropdown-menu-end
+                    navbar-dropdown notification-dropdown">
+
+                                    <div class="notification-dropdown-header">
+                                        <strong>Thông báo</strong>
+
+                                        @if (unreadNotificationCount > 0)
+                                        {
+                                            <span class="badge bg-danger rounded-pill">
+                                                @unreadNotificationCount mới
+                                            </span>
+                                        }
+                                    </div>
+
+                                    <div class="dropdown-divider"></div>
+
+                                    <div class="notification-dropdown-content">
+                                        @if (unreadNotificationCount > 0)
+                                        {
+                                            <p class="mb-1">
+                                                Bạn có
+                                                <strong>@unreadNotificationCount</strong>
+                                                thông báo chưa đọc.
+                                            </p>
+                                        }
+                                        else
+                                        {
+                                            <p class="mb-1 text-muted">
+                                                Bạn không có thông báo mới.
+                                            </p>
+                                        }
+                                </div>
+
+                                <div class="dropdown-divider"></div>
+
+                                <a class="dropdown-item text-center fw-bold"
+                                   asp-page="/Notifications/Index">
+
+                                    Xem tất cả thông báo
+                                </a>
+
+                            </div>
                         </li>
 
                         <!-- Dropdown tài khoản -->
@@ -476,10 +547,185 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="site-footer">
+
         <div class="container">
-            &copy; 2026 - WebTruyen
+
+            <div class="site-footer-grid">
+
+                <!-- Thương hiệu -->
+                <section class="site-footer-brand">
+
+                    <a asp-page="/Index"
+                       class="site-footer-logo">
+
+                        <span class="site-footer-logo-mark">
+                            M
+                        </span>
+
+                        <span>
+                            <strong>METruyen</strong>
+                            <small>Kho sách của bạn</small>
+                        </span>
+
+                    </a>
+
+                    <p>
+                        Không gian dành cho những người yêu sách.
+                        Khám phá, đặt mua và lưu giữ những câu chuyện
+                        bạn yêu thích.
+                    </p>
+
+                    <div class="site-footer-payment">
+                        <span>COD</span>
+                        <span>Chuyển khoản</span>
+                        <span>Đặt hàng trực tuyến</span>
+                    </div>
+
+                </section>
+
+                <!-- Khám phá -->
+                <section class="site-footer-column">
+
+                    <h3>Khám phá</h3>
+
+                    <ul>
+                        <li>
+                            <a asp-page="/Index">
+                                Trang chủ
+                            </a>
+                        </li>
+
+                        <li>
+                            <a asp-page="/Books/Index">
+                                Kho sách
+                            </a>
+                        </li>
+
+                        <li>
+                            <a asp-page="/Favorites/Index">
+                                Sách yêu thích
+                            </a>
+                        </li>
+
+                        <li>
+                            <a asp-page="/RecentlyViewed/Index">
+                                Lịch sử đã xem
+                            </a>
+                        </li>
+                    </ul>
+
+                </section>
+
+                <!-- Tài khoản -->
+                <section class="site-footer-column">
+
+                    <h3>Tài khoản</h3>
+
+                    <ul>
+                        <li>
+                            <a asp-page="/Account/Profile">
+                                Thông tin cá nhân
+                            </a>
+                        </li>
+
+                        <li>
+                            <a asp-page="/Orders/Index">
+                                Đơn hàng của tôi
+                            </a>
+                        </li>
+
+                        <li>
+                            <a asp-page="/Cart/Index">
+                                Giỏ hàng
+                            </a>
+                        </li>
+
+                        <li>
+                            <a asp-page="/Chat/Index">
+                                Hỗ trợ trực tuyến
+                            </a>
+                        </li>
+                    </ul>
+
+                </section>
+
+                <!-- Liên hệ -->
+                <section class="site-footer-column site-footer-contact">
+
+                    <h3>Liên hệ hỗ trợ</h3>
+
+                    <div class="site-footer-contact-item">
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"></path>
+                        </svg>
+
+                        <div>
+                            <strong>Chat với Admin</strong>
+
+                            <a asp-page="/Chat/Index">
+                                Bắt đầu trò chuyện
+                            </a>
+                        </div>
+
+                    </div>
+
+                    <div class="site-footer-contact-item">
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <circle cx="12"
+                                    cy="12"
+                                    r="9"></circle>
+                            <path d="M12 7v5l3 2"></path>
+                        </svg>
+
+                        <div>
+                            <strong>Thời gian hỗ trợ</strong>
+                            <span>08:00 – 22:00 mỗi ngày</span>
+                        </div>
+
+                    </div>
+
+                    <div class="site-footer-contact-item">
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <path d="M4 5h16v14H4z"></path>
+                            <path d="m4 7 8 6 8-6"></path>
+                        </svg>
+
+                        <div>
+                            <strong>Email</strong>
+
+                            <a href="mailto:hotro@metruyen.vn">
+                                hotro@metruyen.vn
+                            </a>
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+            <div class="site-footer-bottom">
+
+                <span>
+                    © @DateTime.Now.Year METruyen.
+                    Đồ án website bán sách trực tuyến.
+                </span>
+
+                <span>
+                    Mỗi trang sách, một cuộc phiêu lưu.
+                </span>
+
+            </div>
+
         </div>
+
     </footer>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

@@ -1,33 +1,247 @@
 ﻿@page
 @model WebTruyen.Pages.Favorites.IndexModel
+
 @{
     ViewData["Title"] = "Sách yêu thích";
+    var favoriteCount = Model.FavoriteBooks.Count;
 }
 
-<h2>Sách yêu thích của tôi</h2>
+<div class="favorite-page">
 
-@if (!Model.FavoriteBooks.Any())
-{
-    <p>Bạn chưa thích sách nào.</p>
-}
-else
-{
-    <div class="row">
-        @foreach (var book in Model.FavoriteBooks)
-        {
-            <div class="col-6 col-md-4 col-lg-3 mb-4">
-                <div class="book-card">
-                    <a asp-page="/Books/Details" asp-route-id="@book.BookId">
-                        <img src="@(string.IsNullOrEmpty(book.ImageUrl) ? "/images/no-image.png" : book.ImageUrl)" alt="@book.Title" />
-                    </a>
-                    <div class="card-body">
-                        <div class="card-title">@book.Title</div>
-                        <div class="card-author">@book.Author</div>
-                        <div class="card-price">@book.Price.ToString("N0") đ</div>
-                        <a asp-page="/Books/Details" asp-route-id="@book.BookId" class="btn btn-outline-primary btn-sm mt-2 w-100">Xem chi tiết</a>
-                    </div>
-                </div>
+    <header class="favorite-header">
+
+        <div>
+            <span class="favorite-eyebrow">
+                TỦ SÁCH CỦA BẠN
+            </span>
+
+            <h1>Sách yêu thích</h1>
+
+            <p>
+                Những cuốn sách bạn đã lưu để xem lại sau.
+            </p>
+        </div>
+
+        <a asp-page="/Books/Index"
+           class="favorite-shop-link">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M19 12H5"></path>
+                <path d="m12 19-7-7 7-7"></path>
+            </svg>
+
+            Khám phá thêm sách
+        </a>
+
+    </header>
+
+    @if (!Model.FavoriteBooks.Any())
+    {
+        <section class="favorite-empty">
+
+            <div class="favorite-empty-icon">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"></path>
+                </svg>
+
             </div>
+
+            <h2>Chưa có sách yêu thích</h2>
+
+            <p>
+                Khi bạn nhấn yêu thích một cuốn sách,
+                cuốn sách đó sẽ xuất hiện tại đây.
+            </p>
+
+            <a asp-page="/Books/Index"
+               class="favorite-empty-button">
+                Đi tới kho sách
+            </a>
+
+        </section>
+    }
+    else
+    {
+        <section class="favorite-toolbar">
+
+            <div class="favorite-toolbar-title">
+
+                <div>
+                    <h2>Danh sách đã lưu</h2>
+
+                    <span>
+                        @favoriteCount cuốn sách
+                    </span>
+                </div>
+
+                <div class="favorite-search">
+
+                    <svg viewBox="0 0 24 24"
+                         aria-hidden="true">
+                        <circle cx="11"
+                                cy="11"
+                                r="7"></circle>
+                        <path d="m20 20-4-4"></path>
+                    </svg>
+
+                    <input type="search"
+                           id="favoriteSearch"
+                           placeholder="Tìm theo tên sách hoặc tác giả..."
+                           autocomplete="off" />
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <section class="favorite-grid"
+                 id="favoriteGrid">
+
+            @foreach (var book in Model.FavoriteBooks)
+            {
+                var hasStock = (book.Stock ?? 0) > 0;
+
+                <article class="favorite-card"
+                         data-favorite-card
+                         data-search="@($"{book.Title} {book.Author}".ToLowerInvariant())">
+
+                    <div class="favorite-card-image-wrapper">
+
+                        <a asp-page="/Books/Details"
+                           asp-route-id="@book.BookId"
+                           class="favorite-card-image">
+
+                            <img src="@(string.IsNullOrWhiteSpace(book.ImageUrl)
+                                                                                                                                           ? "/images/no-image.png"
+                                                                                                                                           : book.ImageUrl)"
+                         alt="@book.Title" />
+
+                        </a>
+
+                        <span class="favorite-heart"
+                              title="Sách yêu thích">
+
+                            <svg viewBox="0 0 24 24"
+                                 aria-hidden="true">
+                                <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"></path>
+                            </svg>
+
+                        </span>
+
+                        <span class="favorite-stock
+                                                             @(hasStock ? "is-available" : "is-unavailable")">
+
+                            @(hasStock ? "Còn hàng" : "Hết hàng")
+
+                        </span>
+
+                    </div>
+
+                    <div class="favorite-card-content">
+
+                        <h3>
+                            <a asp-page="/Books/Details"
+                               asp-route-id="@book.BookId">
+                                @book.Title
+                            </a>
+                        </h3>
+
+                        <p class="favorite-author">
+                            @book.Author
+                        </p>
+
+                        <div class="favorite-card-bottom">
+
+                            <strong class="favorite-price">
+                                @book.Price.ToString("N0") đ
+                            </strong>
+
+                            <a asp-page="/Books/Details"
+                               asp-route-id="@book.BookId"
+                               class="favorite-detail-button">
+
+                                Xem chi tiết
+
+                                <svg viewBox="0 0 24 24"
+                                     aria-hidden="true">
+                                    <path d="M5 12h14"></path>
+                                    <path d="m13 6 6 6-6 6"></path>
+                                </svg>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </article>
+                }
+
+        </section>
+
+        <div class="favorite-filter-empty"
+             id="favoriteFilterEmpty"
+             hidden>
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <circle cx="11"
+                        cy="11"
+                        r="7"></circle>
+                <path d="m20 20-4-4"></path>
+            </svg>
+
+            Không tìm thấy sách phù hợp.
+
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        const favoriteSearch =
+            document.getElementById("favoriteSearch");
+
+        const favoriteCards =
+            document.querySelectorAll("[data-favorite-card]");
+
+        const favoriteEmpty =
+            document.getElementById("favoriteFilterEmpty");
+
+        if (favoriteSearch) {
+            favoriteSearch.addEventListener(
+                "input",
+                function () {
+                    const keyword =
+                        favoriteSearch.value
+                            .trim()
+                            .toLocaleLowerCase("vi-VN");
+
+                    let visibleCount = 0;
+
+                    favoriteCards.forEach(function (card) {
+                        const searchableText =
+                            card.dataset.search || "";
+
+                        const shouldShow =
+                            searchableText.includes(keyword);
+
+                        card.hidden = !shouldShow;
+
+                        if (shouldShow) {
+                            visibleCount++;
+                        }
+                    });
+
+                    favoriteEmpty.hidden =
+                        visibleCount !== 0;
+                }
+            );
         }
-    </div>
+    </script>
 }

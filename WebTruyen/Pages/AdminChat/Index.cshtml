@@ -1,46 +1,317 @@
 ﻿@page
 @model WebTruyen.Pages.AdminChat.IndexModel
+
 @{
     ViewData["Title"] = "Hỗ trợ khách hàng";
     Layout = "_AdminLayout";
+
+    var totalCustomers = Model.Customers.Count;
+
+    var unreadCustomers = Model.Customers.Count(
+        customer => customer.UnreadCount > 0
+    );
+
+    var totalUnread = Model.Customers.Sum(
+        customer => customer.UnreadCount
+    );
 }
 
-<h2>Danh sách khách hàng nhắn tin</h2>
+<div class="admin-chat-list-page">
 
-@if (!Model.Customers.Any())
-{
-    <p>Chưa có khách hàng nào nhắn tin.</p>
-}
-else
-{
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Khách hàng</th>
-                <th>Tin nhắn gần nhất</th>
-                <th>Thời gian</th>
-                <th>Chưa đọc</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var c in Model.Customers)
+    <header class="admin-chat-list-header">
+
+        <div>
+            <span class="admin-chat-eyebrow">
+                TRUNG TÂM HỖ TRỢ
+            </span>
+
+            <h1>Khách hàng nhắn tin</h1>
+
+            <p>
+                Theo dõi và trả lời các yêu cầu hỗ trợ từ khách hàng.
+            </p>
+        </div>
+
+        <a asp-page="/AdminChat/Index"
+           class="admin-chat-refresh">
+
+            <svg viewBox="0 0 24 24"
+                 aria-hidden="true">
+                <path d="M20 6v5h-5"></path>
+                <path d="M4 18v-5h5"></path>
+                <path d="M6.1 9a7 7 0 0 1 11.4-2.6L20 11"></path>
+                <path d="M4 13l2.5 4.6A7 7 0 0 0 17.9 15"></path>
+            </svg>
+
+            Làm mới
+        </a>
+
+    </header>
+
+    <!-- Thống kê -->
+    <section class="admin-chat-statistics">
+
+        <article class="admin-chat-stat-card">
+
+            <span class="admin-chat-stat-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Cuộc trò chuyện</span>
+                <strong>@totalCustomers</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-chat-stat-card">
+
+            <span class="admin-chat-stat-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M4 5h16v14H4z"></path>
+                    <path d="m4 7 8 6 8-6"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Tin nhắn chưa đọc</span>
+                <strong>@totalUnread</strong>
+            </div>
+
+        </article>
+
+        <article class="admin-chat-stat-card">
+
+            <span class="admin-chat-stat-icon">
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="12"
+                            cy="8"
+                            r="4"></circle>
+                    <path d="M4 21a8 8 0 0 1 16 0"></path>
+                </svg>
+            </span>
+
+            <div>
+                <span>Khách đang chờ</span>
+                <strong>@unreadCustomers</strong>
+            </div>
+
+        </article>
+
+    </section>
+
+    @if (!Model.Customers.Any())
+    {
+        <section class="admin-chat-list-empty">
+
+            <span>
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <path d="M21 12a8 8 0 0 1-8 8H7l-4 2 1.5-4A8 8 0 1 1 21 12Z"></path>
+                    <path d="M8 12h.01"></path>
+                    <path d="M12 12h.01"></path>
+                    <path d="M16 12h.01"></path>
+                </svg>
+            </span>
+
+            <h2>Chưa có cuộc trò chuyện</h2>
+
+            <p>
+                Khách hàng nhắn tin sẽ xuất hiện tại đây.
+            </p>
+
+        </section>
+    }
+    else
+    {
+        <!-- Thanh tìm kiếm -->
+        <section class="admin-chat-toolbar">
+
+            <div>
+                <h2>Danh sách hội thoại</h2>
+
+                <span>
+                    @totalCustomers khách hàng
+                </span>
+            </div>
+
+            <label class="admin-chat-search">
+
+                <svg viewBox="0 0 24 24"
+                     aria-hidden="true">
+                    <circle cx="11"
+                            cy="11"
+                            r="7"></circle>
+                    <path d="m20 20-4-4"></path>
+                </svg>
+
+                <input type="search"
+                       id="adminChatSearch"
+                       placeholder="Tìm tên hoặc tài khoản..."
+                       autocomplete="off" />
+
+            </label>
+
+        </section>
+
+        <!-- Danh sách -->
+        <section class="admin-chat-customer-list"
+                 id="adminChatCustomerList">
+
+            @foreach (var customer in Model.Customers)
             {
-                <tr>
-                    <td>@c.FullName (@c.Username)</td>
-                    <td>@c.LastMessage</td>
-                    <td>@c.LastMessageDate?.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>
-                        @if (c.UnreadCount > 0)
+                var initial =
+                string.IsNullOrWhiteSpace(customer.FullName)
+                ? "K"
+                : customer.FullName.Trim()
+                .Substring(0, 1)
+                .ToUpper();
+
+                var hasUnread =
+                customer.UnreadCount > 0;
+
+                <article class="admin-chat-customer-card
+                                        @(hasUnread ? "has-unread" : "")"
+                         data-customer-card
+                         data-search="@($"{customer.FullName} {customer.Username}".ToLowerInvariant())">
+
+                    <div class="admin-chat-customer-avatar">
+                        @initial
+
+                        @if (hasUnread)
                         {
-                            <span class="badge bg-danger">@c.UnreadCount</span>
+                            <span></span>
                         }
-                    </td>
-                    <td>
-                        <a asp-page="Chat" asp-route-userId="@c.UserId" class="btn btn-sm btn-primary">Trả lời</a>
-                    </td>
-                </tr>
+                </div>
+
+                <div class="admin-chat-customer-info">
+
+                    <div class="admin-chat-customer-name">
+
+                        <h3>@customer.FullName</h3>
+
+                        <span>
+                            @@customer.Username
+                        </span>
+
+                    </div>
+
+                    <p class="admin-chat-last-message">
+                        @(string.IsNullOrWhiteSpace(customer.LastMessage)
+                                            ? "Chưa có nội dung tin nhắn."
+                                            : customer.LastMessage)
+                                                               </p>
+
+                </div>
+
+                <div class="admin-chat-customer-meta">
+
+                    <time>
+                        @(customer.LastMessageDate?.ToString(
+                                            "HH:mm, dd/MM/yyyy"
+                                            ) ?? "--")
+                </time>
+
+                @if (hasUnread)
+                        {
+                            <span class="admin-chat-unread-count">
+                                @customer.UnreadCount tin mới
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="admin-chat-read-status">
+                                Đã xem
+                            </span>
+                        }
+
+                    </div>
+
+                    <a asp-page="Chat"
+                       asp-route-userId="@customer.UserId"
+                       class="admin-chat-reply-button">
+
+                        @(hasUnread ? "Trả lời ngay" : "Mở hội thoại")
+
+                        <svg viewBox="0 0 24 24"
+                             aria-hidden="true">
+                            <path d="M5 12h14"></path>
+                            <path d="m13 6 6 6-6 6"></path>
+                        </svg>
+
+                    </a>
+
+                </article>
             }
-        </tbody>
-    </table>
+
+        </section>
+
+        <div class="admin-chat-search-empty"
+             id="adminChatSearchEmpty"
+             hidden>
+
+            Không tìm thấy khách hàng phù hợp.
+
+        </div>
+    }
+
+</div>
+
+@section Scripts {
+    <script>
+        const adminChatSearch =
+            document.getElementById(
+                "adminChatSearch"
+            );
+
+        const customerCards =
+            document.querySelectorAll(
+                "[data-customer-card]"
+            );
+
+        const searchEmpty =
+            document.getElementById(
+                "adminChatSearchEmpty"
+            );
+
+        if (adminChatSearch) {
+            adminChatSearch.addEventListener(
+                "input",
+                function () {
+                    const keyword =
+                        adminChatSearch.value
+                            .trim()
+                            .toLocaleLowerCase("vi-VN");
+
+                    let visibleCount = 0;
+
+                    customerCards.forEach(
+                        function (card) {
+                            const searchText =
+                                card.dataset.search || "";
+
+                            const shouldShow =
+                                searchText.includes(keyword);
+
+                            card.hidden = !shouldShow;
+
+                            if (shouldShow) {
+                                visibleCount++;
+                            }
+                        }
+                    );
+
+                    if (searchEmpty) {
+                        searchEmpty.hidden =
+                            visibleCount !== 0;
+                    }
+                }
+            );
+        }
+    </script>
 }
