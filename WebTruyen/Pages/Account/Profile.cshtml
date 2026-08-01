@@ -1,0 +1,252 @@
+﻿@page
+@model WebTruyen.Pages.Account.ProfileModel
+
+@{
+    ViewData["Title"] = "Thông tin cá nhân";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show">
+                    @TempData["Success"]
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="alert">
+                    </button>
+                </div>
+            }
+
+            <div class="card border-0 shadow">
+                <div class="card-header bg-dark py-3">
+                    <h3 class="mb-0 text-white fw-bold">
+                        Thông tin cá nhân
+                    </h3>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="row">
+
+                        <!-- Cột ảnh đại diện -->
+                        <div class="col-md-4 text-center border-end">
+                            <div class="mb-3">
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                    Model.CurrentAvatar))
+                                {
+                                    <img id="avatarPreview"
+                                         src="@Model.CurrentAvatar"
+                                         alt="Ảnh đại diện"
+                                         class="rounded-circle border shadow-sm"
+                                         style="width: 180px;
+                                                height: 180px;
+                                                object-fit: cover;" />
+                                }
+                                else
+                                {
+                                    <div id="defaultAvatar"
+                                         class="rounded-circle border shadow-sm
+                                                d-flex align-items-center
+                                                justify-content-center mx-auto"
+                                         style="width: 180px;
+                                                height: 180px;
+                                                background: #f1eadc;
+                                                font-size: 70px;">
+                                        👤
+                                    </div>
+
+                                    <img id="avatarPreview"
+                                         src=""
+                                         alt="Ảnh đại diện"
+                                         class="rounded-circle border shadow-sm d-none"
+                                         style="width: 180px;
+                                                height: 180px;
+                                                object-fit: cover;" />
+                                }
+                            </div>
+
+                            <h4 class="mb-1">
+                                @Model.Input.FullName
+                            </h4>
+
+                            <span class="badge bg-success">
+                                @Model.Role
+                            </span>
+
+                            @if (Model.CreatedDate != null)
+                            {
+                                <p class="small text-muted mt-3">
+                                    Tham gia:
+                                    @Model.CreatedDate.Value.ToString("dd/MM/yyyy")
+                                </p>
+                            }
+                        </div>
+
+                        <!-- Cột chỉnh sửa thông tin -->
+                        <div class="col-md-8 ps-md-4">
+
+                            <form method="post"
+                                  enctype="multipart/form-data">
+
+                                <div asp-validation-summary="ModelOnly"
+                                     class="alert alert-danger">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        Tên đăng nhập
+                                    </label>
+
+                                    <input value="@Model.Username"
+                                           class="form-control"
+                                           readonly />
+
+                                    <small class="text-muted">
+                                        Tên đăng nhập không thể thay đổi.
+                                    </small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Input.FullName"
+                                           class="form-label">
+                                        Họ và tên
+                                    </label>
+
+                                    <input asp-for="Input.FullName"
+                                           class="form-control"
+                                           placeholder="Nhập họ và tên" />
+
+                                    <span asp-validation-for="Input.FullName"
+                                          class="text-danger">
+                                    </span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Input.Email"
+                                           class="form-label">
+                                        Email
+                                    </label>
+
+                                    <input asp-for="Input.Email"
+                                           class="form-control"
+                                           placeholder="Nhập email" />
+
+                                    <span asp-validation-for="Input.Email"
+                                          class="text-danger">
+                                    </span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Input.Phone"
+                                           class="form-label">
+                                        Số điện thoại
+                                    </label>
+
+                                    <input asp-for="Input.Phone"
+                                           class="form-control"
+                                           placeholder="Nhập số điện thoại" />
+
+                                    <span asp-validation-for="Input.Phone"
+                                          class="text-danger">
+                                    </span>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="Input.Address"
+                                           class="form-label">
+                                        Địa chỉ
+                                    </label>
+
+                                    <textarea asp-for="Input.Address"
+                                              class="form-control"
+                                              rows="3"
+                                              placeholder="Nhập địa chỉ">
+                                    </textarea>
+
+                                    <span asp-validation-for="Input.Address"
+                                          class="text-danger">
+                                    </span>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label asp-for="Input.AvatarFile"
+                                           class="form-label">
+                                        Ảnh đại diện
+                                    </label>
+
+                                    <input asp-for="Input.AvatarFile"
+                                           id="avatarFile"
+                                           type="file"
+                                           class="form-control"
+                                           accept=".jpg,.jpeg,.png,.webp" />
+
+                                    <span asp-validation-for="Input.AvatarFile"
+                                          class="text-danger">
+                                    </span>
+
+                                    <small class="text-muted">
+                                        Chấp nhận JPG, PNG, WEBP; tối đa 2 MB.
+                                    </small>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit"
+                                            class="btn btn-success px-4">
+                                        Lưu thay đổi
+                                    </button>
+
+                                    <a asp-page="/Index"
+                                       class="btn btn-outline-secondary">
+                                        Quay lại
+                                    </a>
+                                </div>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        const avatarFile =
+            document.getElementById("avatarFile");
+
+        const avatarPreview =
+            document.getElementById("avatarPreview");
+
+        const defaultAvatar =
+            document.getElementById("defaultAvatar");
+
+        avatarFile.addEventListener("change", function () {
+            const file = this.files[0];
+
+            if (!file) {
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (event) {
+                avatarPreview.src = event.target.result;
+                avatarPreview.classList.remove("d-none");
+
+                if (defaultAvatar) {
+                    defaultAvatar.classList.add("d-none");
+                }
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+}
