@@ -4,8 +4,22 @@
 @using System.Security.Claims
 
 @inject WebTruyenContext Db
-
 @{
+    var navbarCategories = await Db.Categories
+        .AsNoTracking()
+        .OrderBy(c => c.CategoryName)
+        .ToListAsync();
+}
+@{
+    var currentPage =
+    ViewContext.RouteData.Values["page"]?.ToString() ?? "";
+
+    var displayName =
+        User.Identity?.Name ?? "Tài khoản";
+
+    var userInitial = string.IsNullOrWhiteSpace(displayName)
+        ? "U"
+        : displayName.Substring(0, 1).ToUpper();
     int unreadNotificationCount = 0;
 
     var userIdText =
@@ -43,7 +57,288 @@
 </head>
 
 <body>
-    <header>
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg navbar-dark navbar-book">
+            <div class="container">
+
+                <!-- Logo -->
+                <a class="navbar-brand brand-lockup"
+                   asp-page="/Index">
+
+                    <span class="brand-mark">
+                        M
+                    </span>
+
+                    <span class="brand-copy">
+                        <strong>METruyen</strong>
+                        <small>Kho sách của bạn</small>
+                    </span>
+                </a>
+
+                <!-- Nút menu điện thoại -->
+                <button class="navbar-toggler"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#mainNavbar"
+                        aria-controls="mainNavbar"
+                        aria-expanded="false"
+                        aria-label="Mở menu">
+
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div id="mainNavbar"
+                     class="collapse navbar-collapse">
+
+                    <!-- Menu bên trái -->
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPage == "/Index" ? "active" : "")"
+                               asp-page="/Index">
+                                Trang chủ
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link @(currentPage.StartsWith("/Books") ? "active" : "")"
+                               asp-page="/Books/Index">
+                                Kho sách
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link text-dark dropdown-toggle"
+                               href="#"
+                               id="categoryDropdown"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                Thể loại
+                            </a>
+
+                            <ul class="dropdown-menu"
+                                aria-labelledby="categoryDropdown">
+
+                                <li>
+                                    <a class="dropdown-item"
+                                       asp-page="/Books/Index">
+                                        Tất cả thể loại
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <hr class="dropdown-divider" />
+                                </li>
+
+                                @foreach (var category in navbarCategories)
+                                {
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-page="/Books/Index"
+                                           asp-route-categoryId="@category.CategoryId">
+                                            @category.CategoryName
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+
+                    </ul>
+
+                    <!-- Menu bên phải -->
+                    <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
+
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <!-- Giỏ hàng -->
+                            <li class="nav-item">
+                                <a class="nav-link nav-cart @(currentPage.StartsWith("/Cart") ? "active" : "")"
+                                   asp-page="/Cart/Index">
+
+                                    <span class="nav-symbol">🛒</span>
+                                    <span>Giỏ hàng</span>
+                                </a>
+                            </li>
+
+                            <!-- Dropdown tiện ích -->
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle"
+                                   href="#"
+                                   role="button"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
+
+                                    Tiện ích
+                                </a>
+
+                                <ul class="dropdown-menu dropdown-menu-end navbar-dropdown">
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-page="/Orders/Index">
+
+                                            <span class="dropdown-symbol">▤</span>
+
+                                            <span>
+                                                <strong>Đơn hàng của tôi</strong>
+                                                <small>Theo dõi đơn đã đặt</small>
+                                            </span>
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-page="/Chat/Index">
+
+                                            <span class="dropdown-symbol">💬</span>
+
+                                            <span>
+                                                <strong>Hỗ trợ trực tuyến</strong>
+                                                <small>Chat với quản trị viên</small>
+                                            </span>
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-page="/RecentlyViewed/Index">
+
+                                            <span class="dropdown-symbol">◷</span>
+
+                                            <span>
+                                                <strong>Lịch sử đã xem</strong>
+                                                <small>Các sách xem gần đây</small>
+                                            </span>
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-page="/Favorites/Index">
+
+                                            <span class="dropdown-symbol">♡</span>
+
+                                            <span>
+                                                <strong>Sách yêu thích</strong>
+                                                <small>Danh sách đã lưu</small>
+                                            </span>
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </li>
+
+                            <!-- Trang quản trị -->
+                            @if (User.IsInRole("Admin") ||
+                                                    User.IsInRole("Staff"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-admin-link"
+                                       asp-page="/AdminDashboard/Index">
+                                        Quản trị
+                                    </a>
+                                </li>
+                            }
+
+                        <!-- Chuông thông báo -->
+                        <li class="nav-item notification-slot">
+                            <component type="typeof(NotificationBell)"
+                                       render-mode="ServerPrerendered"
+                                       param-UnreadCount="@unreadNotificationCount" />
+                        </li>
+
+                        <!-- Dropdown tài khoản -->
+                        <li class="nav-item dropdown account-dropdown">
+                            <a class="nav-link account-toggle dropdown-toggle"
+                               href="#"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+
+                                <span class="user-avatar">
+                                    @userInitial
+                                </span>
+
+                                <span class="account-name d-none d-lg-inline">
+                                    @displayName
+                                </span>
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-menu-end navbar-dropdown account-menu">
+
+                                <li class="account-summary">
+                                    <span class="user-avatar user-avatar-large">
+                                        @userInitial
+                                    </span>
+
+                                    <span>
+                                        <strong>@displayName</strong>
+                                        <small>
+                                            @(User.IsInRole("Admin")
+                                                                                        ? "Quản trị viên"
+                                                                                        : User.IsInRole("Staff")
+                                                                                        ? "Nhân viên"
+                                                                                        : "Khách hàng")
+                                        </small>
+                                    </span>
+                                </li>
+
+                                    <li>
+                                        <hr class="dropdown-divider" />
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item"
+                                           asp-page="/Account/Profile">
+
+                                            <span class="dropdown-symbol">●</span>
+
+                                            <span>
+                                                <strong>Thông tin cá nhân</strong>
+                                                <small>Cập nhật tài khoản</small>
+                                            </span>
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a class="dropdown-item logout-item"
+                                           asp-page="/Account/Logout">
+
+                                            <span class="dropdown-symbol">↪</span>
+
+                                            <span>
+                                                <strong>Đăng xuất</strong>
+                                                <small>Thoát khỏi tài khoản</small>
+                                            </span>
+                                        </a>
+                                    </li>
+
+                                </ul>
+                            </li>
+                                                }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-login"
+                                   asp-page="/Account/Login">
+                                    Đăng nhập
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a class="nav-register"
+                                   asp-page="/Account/Register">
+                                    Đăng ký
+                                </a>
+                            </li>
+                        }
+
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+@*     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
 
@@ -80,20 +375,6 @@
                                 Sách
                             </a>
                         </li>
-
-                        @* <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-page="/Books/BestSellers">
-                                Bán chạy
-                            </a>
-                        </li>
-
-                        <li class="nav-item">
-                            <a class="nav-link text-dark"
-                               asp-page="/Books/NewUpdated">
-                                Mới cập nhật
-                            </a>
-                        </li> *@
                     </ul>
 
                     <ul class="navbar-nav align-items-center">
@@ -187,7 +468,7 @@
                 </div>
             </div>
         </nav>
-    </header>
+    </header> *@
 
     <div class="container main-content">
         <main role="main" class="pb-3">

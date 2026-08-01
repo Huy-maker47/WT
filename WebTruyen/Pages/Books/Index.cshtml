@@ -6,6 +6,20 @@
 }
 
 <h2>Danh sách sách</h2>
+@if (Model.CategoryId.HasValue)
+{
+    var selectedCategory = Model.Categories
+        .FirstOrDefault(c =>
+            c.CategoryId == Model.CategoryId.Value);
+
+    if (selectedCategory != null)
+    {
+        <p class="text-muted">
+            Đang xem thể loại:
+            <strong>@selectedCategory.CategoryName</strong>
+        </p>
+    }
+}
 
 @if (!string.IsNullOrEmpty(Model.AuthorName))
 {
@@ -20,7 +34,169 @@
 }
 
 <!-- Form tìm kiếm và lọc -->
-<form method="get" class="row mb-4">
+<form method="get"
+      class="card border-0 shadow-sm p-3 mb-4">
+
+    <div class="row g-3">
+
+        <!-- Thể loại -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">
+                Thể loại
+            </label>
+
+            <select name="categoryId"
+                    class="form-select">
+
+                <option value="">
+                    Tất cả thể loại
+                </option>
+
+                @foreach (var cate in Model.Categories)
+                {
+                    if (Model.CategoryId == cate.CategoryId)
+                    {
+                        <option value="@cate.CategoryId"
+                                selected>
+                            @cate.CategoryName
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="@cate.CategoryId">
+                            @cate.CategoryName
+                        </option>
+                    }
+                }
+            </select>
+        </div>
+
+        <!-- Tìm kiếm -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">
+                Tìm kiếm
+            </label>
+
+            <input type="text"
+                   name="keyword"
+                   value="@Model.Keyword"
+                   class="form-control"
+                   placeholder="Tên sách hoặc tác giả" />
+        </div>
+
+        <!-- Sắp xếp -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">
+                Sắp xếp
+            </label>
+
+            <select name="sort"
+                    class="form-select">
+
+                <option value="">
+                    Mới nhất
+                </option>
+
+                @if (Model.Sort == "title_az")
+                {
+                    <option value="title_az" selected>
+                        Tên A → Z
+                    </option>
+                }
+                else
+                {
+                    <option value="title_az">
+                        Tên A → Z
+                    </option>
+                }
+
+                @if (Model.Sort == "title_za")
+                {
+                    <option value="title_za" selected>
+                        Tên Z → A
+                    </option>
+                }
+                else
+                {
+                    <option value="title_za">
+                        Tên Z → A
+                    </option>
+                }
+
+                @if (Model.Sort == "price_asc")
+                {
+                    <option value="price_asc" selected>
+                        Giá tăng dần
+                    </option>
+                }
+                else
+                {
+                    <option value="price_asc">
+                        Giá tăng dần
+                    </option>
+                }
+
+                @if (Model.Sort == "price_desc")
+                {
+                    <option value="price_desc" selected>
+                        Giá giảm dần
+                    </option>
+                }
+                else
+                {
+                    <option value="price_desc">
+                        Giá giảm dần
+                    </option>
+                }
+            </select>
+        </div>
+
+        <!-- Giá tối thiểu -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">
+                Giá từ
+            </label>
+
+            <input type="number"
+                   name="minPrice"
+                   value="@Model.MinPrice"
+                   class="form-control"
+                   min="0"
+                   step="1"
+                   placeholder="Giá tối thiểu" />
+        </div>
+
+        <!-- Giá tối đa -->
+        <div class="col-md-3">
+            <label class="form-label fw-bold">
+                Giá đến
+            </label>
+
+            <input type="number"
+                   name="maxPrice"
+                   value="@Model.MaxPrice"
+                   class="form-control"
+                   min="0"
+                   step="1"
+                   placeholder="Giá tối đa" />
+        </div>
+
+        <!-- Nút -->
+        <div class="col-md-3 d-flex align-items-end gap-2">
+            <button type="submit"
+                    class="btn btn-forest flex-grow-1">
+                Áp dụng
+            </button>
+
+            <a asp-page="/Books/Index"
+               class="btn btn-outline-secondary">
+                Xóa lọc
+            </a>
+        </div>
+
+    </div>
+</form>
+@* <form method="get" class="row mb-4">
     <div class="col-md-4">
         <select name="categoryId"
                 class="form-select chip-select"
@@ -61,7 +237,7 @@
             Tìm
         </button>
     </div>
-</form>
+</form> *@
 
 <!-- Danh sách sách chính -->
 @if (!Model.Books.Any())
